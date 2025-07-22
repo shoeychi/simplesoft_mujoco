@@ -1,6 +1,5 @@
 
-set(MUJOCO_simplysoft_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/../..
-                              ${CMAKE_CURRENT_SOURCE_DIR}/../../src
+set(MUJOCO_simplysoft_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/../../include
 )
 
 set(MUJOCO_simplysoft_SRCS
@@ -12,7 +11,7 @@ set(MUJOCO_simplysoft_SRCS
 # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/biulab/cmakes")
 
 find_package(cuPhy REQUIRED)
-
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib)
 # add include
 add_library(simplesoft SHARED)
 target_sources(simplesoft PRIVATE ${MUJOCO_simplysoft_SRCS})

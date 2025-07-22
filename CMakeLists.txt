@@ -43,8 +43,8 @@ option(MUJOCO_BUILD_SIMULATE "Build simulate library for MuJoCo" ON)
 option(MUJOCO_BUILD_TESTS "Build tests for MuJoCo" OFF)
 option(MUJOCO_TEST_PYTHON_UTIL "Build and test utility libraries for Python bindings" OFF)
 
-# include(MujocoOptions)
- include(MujocoMacOS)
+include(MujocoOptions)
+include(MujocoMacOS)
 # include(MujocoDependencies)
 
 set(MUJOCO_HEADERS
