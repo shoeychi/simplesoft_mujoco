@@ -1,0 +1,8 @@
+build/
+simulate/
+sample/
+model/*
+!model/plugin
+plugin/*
+!plugin/simplesoft
+

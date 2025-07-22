@@ -1,0 +1,29 @@
+<mujoco model="SimpleSoft">
+    <include file="humanoid_base.xml" />
+    <include file="humanoid_body.xml" />
+
+    <!-- <include file="/home/ian/fudan/mujoco_private/model/plugin/robots/xman_v1.2_old.xml" /> -->
+    <include file="/home/dlkou/DLKOU/ENGINE/xiaowu/humanoid_bench/assets/robots/xman_v1.2_old.xml" />
+    <include file="humanoid_keyframes_all.xml" />
+    <!-- <include file="humanoid_keyframes_human.xml" /> -->
+
+
+    <extension>
+        <plugin plugin="mujoco.simplysoft" />
+    </extension>
+
+    <size memory="10M" />
+
+    <worldbody>
+        <plugin plugin="mujoco.simplysoft">
+            <config key="model" value="/usr/share/biulab/files" />
+            <config key="scale" value="1.0" />
+            <config key="wireframe" value="1" />
+            <config key="color_max" value="2.0" />
+            <config key="sdf_radius" value="0.08" />
+            <config key="sim_step" value="1" />
+            <config key="barrier_valid" value="0" />
+            <config key="force_feedback" value="0" />
+        </plugin>
+    </worldbody>
+</mujoco>
