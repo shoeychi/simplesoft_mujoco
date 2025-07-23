@@ -1,0 +1,23 @@
+<mujoco model="Say">
+    <include file="./simplesoft/humanoid_base.xml" />
+    <include file="./simplesoft/humanoid_body.xml" />
+    <include file="./xman_v1.2_old.xml" />
+    <include file="./simplesoft/humanoid_keyframes_all.xml" />
+
+    <extension>
+        <plugin plugin="mujoco.simplysoft" />
+    </extension>
+
+    <size memory="10M" />
+
+    <worldbody>
+        <plugin plugin="mujoco.simplysoft">
+            <config key="model" value="/usr/share/biulab/files" />
+            <config key="scale" value="1.0" />
+            <config key="wireframe" value="1" />
+            <config key="color_max" value="2.0" />
+            <config key="sdf_radius" value="0.08" />
+            <config key="sim_step" value="1" />
+        </plugin>
+    </worldbody>
+</mujoco>

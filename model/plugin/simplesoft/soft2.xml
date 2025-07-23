@@ -2,8 +2,7 @@
     <include file="humanoid_base.xml" />
     <include file="humanoid_body.xml" />
 
-    <!-- <include file="/home/ian/fudan/mujoco_private/model/plugin/robots/xman_v1.2_old.xml" /> -->
-    <include file="/home/dlkou/DLKOU/ENGINE/xiaowu/humanoid_bench/assets/robots/xman_v1.2_old.xml" />
+    <include file="../robots/xman_v1.2_old.xml" />
     <include file="humanoid_keyframes_all.xml" />
     <!-- <include file="humanoid_keyframes_human.xml" /> -->
 

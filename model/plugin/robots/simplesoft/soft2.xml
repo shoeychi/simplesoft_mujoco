@@ -1,0 +1,24 @@
+<mujoco model="Say">
+    <include file="humanoid_base.xml" />
+    <include file="humanoid_body.xml" />
+
+    <include file="/home/zzzhhh/PHD/xiaowu/humanoid_bench/assets/robots/xiaowu31_pos_new.xml" />
+    <include file="humanoid_keyframes_all.xml" />
+    <!-- <include file="humanoid_keyframes_human.xml" /> -->
+
+
+    <extension>
+        <plugin plugin="mujoco.simplysoft" />
+    </extension>
+
+    <size memory="10M" />
+
+    <worldbody>
+        <plugin plugin="mujoco.simplysoft">
+            <config key="model" value="/usr/share/biulab/files" />
+            <config key="scale" value="1.0" />
+            <config key="wireframe" value="1" />
+            <config key="color_max" value="2.0" />
+        </plugin>
+    </worldbody>
+</mujoco>

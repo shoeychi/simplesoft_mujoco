@@ -39,30 +39,29 @@ enable_language(CXX)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 option(MUJOCO_BUILD_EXAMPLES "Build samples for MuJoCo" OFF)
-option(MUJOCO_BUILD_SIMULATE "Build simulate library for MuJoCo" ON)
-option(MUJOCO_BUILD_TESTS "Build tests for MuJoCo" OFF)
-option(MUJOCO_TEST_PYTHON_UTIL "Build and test utility libraries for Python bindings" OFF)
+option(MUJOCO_BUILD_SIMULATE "Build simulate library for MuJoCo" OFF)
+
 
 include(MujocoOptions)
 include(MujocoMacOS)
 # include(MujocoDependencies)
 
-set(MUJOCO_HEADERS
-    include/mujoco/mjdata.h
-    include/mujoco/mjexport.h
-    include/mujoco/mjmacro.h
-    include/mujoco/mjmodel.h
-    include/mujoco/mjplugin.h
-    include/mujoco/mjrender.h
-    include/mujoco/mjsan.h
-    include/mujoco/mjspec.h
-    include/mujoco/mjthread.h
-    include/mujoco/mjtnum.h
-    include/mujoco/mjui.h
-    include/mujoco/mjvisualize.h
-    include/mujoco/mjxmacro.h
-    include/mujoco/mujoco.h
-)
+# set(MUJOCO_HEADERS
+#     include/mujoco/mjdata.h
+#     include/mujoco/mjexport.h
+#     include/mujoco/mjmacro.h
+#     include/mujoco/mjmodel.h
+#     include/mujoco/mjplugin.h
+#     include/mujoco/mjrender.h
+#     include/mujoco/mjsan.h
+#     include/mujoco/mjspec.h
+#     include/mujoco/mjthread.h
+#     include/mujoco/mjtnum.h
+#     include/mujoco/mjui.h
+#     include/mujoco/mjvisualize.h
+#     include/mujoco/mjxmacro.h
+#     include/mujoco/mujoco.h
+# )
 
 # Add metadata to mujoco.dll when building on Windows.
 if(WIN32)
@@ -96,7 +95,7 @@ if(MUJOCO_BUILD_SIMULATE)
 endif()
 
 if(MUJOCO_BUILD_EXAMPLES)
-  #add_subdirectory(sample)
+ # add_subdirectory(sample)
 endif()
 
 

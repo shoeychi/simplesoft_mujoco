@@ -1,0 +1,48 @@
+<mujoco model="Say">
+    <include file="scene.xml" />
+
+    <extension>
+        <plugin plugin="mujoco.simplysoft" />
+    </extension>
+
+    <statistic center="0 0 .3" extent="1" />
+    <visual>
+        <global elevation="-30" />
+    </visual>
+
+    <compiler autolimits="true" />
+
+    <size memory="10M" />
+
+    <!-- 定义资产：此处提供一个占位的 mesh 文件路径，可以根据需要修改 -->
+    <asset>
+        <mesh name="soft_mesh_asset" file="spot.obj" />
+        <model name="humanoid" file="humanoid.xml" />
+    </asset>
+
+    <worldbody>
+        <light directional="true" diffuse=".4 .4 .4" specular="0.1 0.1 0.1" pos="0 0 5" dir="0 0 -1"
+            castshadow="false" />
+        <light name="spotlight" mode="targetbodycom" target="world" diffuse="1 1 1"
+            specular="0.3 0.3 0.3" pos="-6 -6 4" cutoff="60" />
+
+        <plugin plugin="mujoco.simplysoft">
+            <config key="model" value="/usr/share/biulab/files" />
+            <config key="scale" value="1.0" />
+            <config key="wireframe" value="1" />
+            <config key="color_max" value="2.0" />
+        </plugin>
+
+        <frame pos="0 -1 0">
+            <attach model="humanoid" body="torso" prefix="_" />
+        </frame>
+
+        <body name="soft_body">
+            <!-- 注意这里引用了在 asset 中定义的 mesh asset -->
+            <geom name="soft_mesh" type="mesh" mesh="soft_mesh_asset" group="3" />
+        </body>
+
+    </worldbody>
+
+
+</mujoco>
