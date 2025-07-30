@@ -3,6 +3,7 @@
     <include file="../simplesoft/humanoid_base.xml" />
     <include file="../simplesoft/humanoid_body.xml" />
     <include file="./xiaoliu.xml" />
+    <include file="./simpleTable/simpleWoodChair_body.xml"/> 
     <!-- <include file="../simplesoft/humanoid_keyframes_all.xml" /> -->
 
     <extension>
