@@ -1,0 +1,56 @@
+<mujoco model="humanoid_arm">
+    <compiler angle="radian" meshdir="../../../" eulerseq="zyx" autolimits="true" />
+    <size njmax="500" nconmax="100" />
+    <asset>
+        <mesh name="base_link" file="./human_arm/meshes/base_link.STL" />
+        <mesh name="skin_body" file="./human_arm/meshes/skin_body.STL" />
+        <mesh name="skin_arm" file="./human_arm/meshes/skin_arm.STL" />
+        <mesh name="Link1" file="./human_arm/meshes/Link1.STL" />
+        <mesh name="Link2" file="./human_arm/meshes/Link2.STL" />
+        <mesh name="Link3" file="./human_arm/meshes/Link3.STL" />
+        <mesh name="Link4" file="./human_arm/meshes/Link4.STL" />
+        <mesh name="Link5" file="./human_arm/meshes/Link5.STL" />
+        <mesh name="Link6" file="./human_arm/meshes/Link6.STL" />
+        <mesh name="Link7" file="./human_arm/meshes/Link7.STL" />
+    </asset>
+    <worldbody>
+        <geom type="mesh" rgba="1 1 1 1" mesh="base_link" />
+        <geom type="mesh" rgba="1 1 1 1" mesh="skin_body" />
+        <geom type="mesh" rgba="1 1 1 1" mesh="skin_arm" />
+        <body name="Link1" pos="0 -0.16516 1.4186" quat="0.7071 -0.00307461 0.7071 -0.00307461">
+            <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001" />
+            <joint name="Joint1" pos="0 0 0" axis="0 0 1" range="-0.4363 0.4363" actuatorfrcrange="-3 3"/>
+            <geom type="mesh" rgba="1 1 1 1" mesh="Link1" />
+            <body name="Link2" pos="0 0 0" quat="0.707105 0 -0.707108 0">
+                <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001" />
+                <joint name="Joint2" pos="0 0 0" axis="0 0 1" range="-0.4363 0.4363" actuatorfrcrange="-3 3"/>
+                <geom type="mesh" rgba="1 1 1 1" mesh="Link2" />
+                <body name="Link3" pos="0 0 0" quat="0.704023 0.710177 0 0">
+                    <inertial pos="3.92956e-09 -0.00141857 -0.000167659" mass="0.001" diaginertia="0.001 0.001 0.001" />
+                    <joint name="Joint3" pos="0 0 0" axis="0 0 1" range="-0.4363 0.4363" actuatorfrcrange="-3 3"/>
+                    <geom type="mesh" rgba="1 1 1 1" mesh="Link3" />
+                    <body name="Link4" pos="-0.054306 -0.012019 0.28548" quat="0.707105 -0.707108 0 0">
+                        <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001" />
+                        <joint name="Joint4" pos="0 0 0" axis="0 0 1" range="-0.4363 0.4363" actuatorfrcrange="-3 3"/>
+                        <geom type="mesh" rgba="1 1 1 1" mesh="Link4" />
+                        <body name="Link5" pos="0 0 0" quat="0.707105 0.707108 0 0">
+                            <inertial pos="5.43098e-05 -0.00140655 -0.000453136" mass="0.001" diaginertia="0.001 0.001 0.001" />
+                            <joint name="Joint5" pos="0 0 0" axis="0 0 1" range="-0.4363 0.4363" actuatorfrcrange="-3 3"/>
+                            <geom type="mesh" rgba="1 1 1 1" mesh="Link5" />
+                            <body name="Link6" pos="0 0 0.2457" quat="0.70695 -0.00979182 0.707039 -0.0148822">
+                                <inertial pos="0 0 0" mass="0.001" diaginertia="0.001 0.001 0.001" />
+                                <joint name="Joint6" pos="0 0 0" axis="0 0 1" range="-0.4363 0.4363" actuatorfrcrange="-3 3"/>
+                                <geom type="mesh" rgba="1 1 1 1" mesh="Link6" />
+                                <body name="Link7" pos="0 0 0" quat="0.719227 -0.694556 0.0125518 0.0121212">
+                                    <inertial pos="0.000698836 -5.00692e-05 -0.00141502" mass="0.001" diaginertia="0.001 0.001 0.001" />
+                                    <joint name="Joint7" pos="0 0 0" axis="0 0 1" range="-0.4363 0.4363" actuatorfrcrange="-3 3"/>
+                                    <geom type="mesh" rgba="1 1 1 1" mesh="Link7" />
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>
