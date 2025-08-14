@@ -213,8 +213,8 @@ namespace mujoco::plugin::simplysoft
         robot_obstracle_right->pos = robot_obstracle_right->pre_pos = robot_obstracle_right->m_sdf->pos;
         m_phy->m_phy_scene->obstracles.push_back(robot_obstracle_right);
 
-        body_id_upperarm_L_ = mj_name2id(m, mjOBJ_BODY, "upper_arm_left");
-        body_id_upperarm_R_ = mj_name2id(m, mjOBJ_BODY, "upper_arm_right");
+        body_id_upperarm_L_ = mj_name2id(m, mjOBJ_BODY, "hand_left");
+        body_id_upperarm_R_ = mj_name2id(m, mjOBJ_BODY, "hand_right");
         // std::cout<<"body_id_upperarm_L_  "<<body_id_upperarm_L_<<'\n';
 
         // tet_obj_left  = LoadTetrahedralMesh(path, "bunny", vert_pos_left);
