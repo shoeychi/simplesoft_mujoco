@@ -12,12 +12,15 @@ set(MUJOCO_simplysoft_SRCS
 
 find_package(cuPhy REQUIRED)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib)
+find_package(nlohmann_json REQUIRED)
+
 # add include
 add_library(simplesoft SHARED)
 target_sources(simplesoft PRIVATE ${MUJOCO_simplysoft_SRCS})
 target_include_directories(simplesoft PRIVATE ${cuPhy_INCLUDE_DIRS} ${MUJOCO_simplysoft_INCLUDE})
 
 target_link_libraries(simplesoft PRIVATE mujoco ${cuPhy_LIBRARIES}) # add library
+target_link_libraries(simplesoft PRIVATE nlohmann_json)
 
 target_compile_options(
   simplesoft

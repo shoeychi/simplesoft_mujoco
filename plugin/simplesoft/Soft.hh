@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <vector>
+#include <yaml-cpp/yaml.h>
 
 #include <mujoco/mjdata.h>
 #include <mujoco/mjmodel.h>
@@ -16,141 +17,127 @@
 #define pi 3.14159265358979323846
 #define pi_2 1.57079632679489661923
 
-namespace mujoco::plugin::simplysoft
-{
+namespace mujoco::plugin::simplysoft {
 
-  class SimpleSoft
-  {
-  private:
-    mjtNum scale;                        ///< scale rate.
-    bool show_wireframe;                 ///< render settings.
-    std::shared_ptr<Phy3DEngine> m_phy;  ///< simulate instance.
-    std::shared_ptr<Phy3DScene> m_scene; ///< simulate scene, container.
-    // mjtNum                       m_radius = 0.04; ///< robot's capsule radius.
-    mjtNum m_radius = 0.0565; ///< robot's capsule radius.
-    int sim_step = 5;
-    bool barrier_valid = false;
-    bool force_feedback = false;
-    int barrier_id = 0;
-
-    std::vector<mjtNum> vert_pos_left;   ///< vertex cache for all tetraMesh (3*n).
-    std::vector<mjtNum> vert_pos_right;  ///< vertex cache for all tetraMesh (3*n).
-    std::vector<int> surface_tris_left;  ///< triangle index for rendering (v0, v1, v2).
-    std::vector<int> surface_tris_right; ///< triangle index for rendering (v0, v1, v2).
-
-    std::shared_ptr<Phy3DObstracle> robot_obstracle_left;  ///< [robot] simulate obstracle object.
-    std::shared_ptr<SDFCapsule> robot_sdf_left;            ///< [robot] simulate sdf object.
-    std::shared_ptr<Phy3DObstracle> robot_obstracle_right; ///< [robot] simulate obstracle object.
-    std::shared_ptr<SDFCapsule> robot_sdf_right;           ///< [robot] simulate sdf object.
-
-    cuType jt_scale = 1.0;                        ///< [bind] use jointscale.
-    cuType muscle_radius = 0.019 * jt_scale;      ///< [bind] collision capsule's radius
-    cuVec3 l1pos = cuVec3(0.143, 0.238, -0.007);  ///< [bind] for bind arm's init position.
-    cuVec3 l2pos = cuVec3(0.457, 0.217, -0.037);  ///< [bind] for bind arm's init position.
-    cuVec3 r1pos = cuVec3(-0.137, 0.232, -0.004); ///< [bind] for bind arm's init position.
-    cuVec3 r2pos = cuVec3(-0.466, 0.217, -0.040); ///< [bind] for bind arm's init position.
-
-    std::shared_ptr<Phy3DObstracle> human_obstracle_left;  ///< [human] simulate obstracle object.
-    std::shared_ptr<SDFCapsule> human_sdf_left;            ///< [human] simulate sdf object.
-    std::shared_ptr<Phy3DObstracle> human_obstracle_right; ///< [human] simulate obstracle object.
-    std::shared_ptr<SDFCapsule> human_sdf_right;           ///< [human] simulate sdf object.
-    std::shared_ptr<Phy3DDeformableObject> tet_obj_left;   ///< [huamn] simulate deformable object.
-    std::shared_ptr<Phy3DDeformableObject> tet_obj_right;  ///< [huamn] simulate deformable object.
-
-    mjtNum *human_pos_left1;  // human's joint position.
-    mjtNum *human_pos_left2;  // human's joint position.
-    mjtNum *human_pos_left3;  // human's joint position.
-    mjtNum *human_pos_right1; // human's joint position.
-    mjtNum *human_pos_right2; // human's joint position.
-    mjtNum *human_pos_right3; // human's joint position.
-
-    mjtNum *robot_pos_left1; // robot's joint position.
-    mjtNum *robot_pos_left2; // robot's joint position.
-    mjtNum *robot_pos_left3; // robot's joint position.
-    mjtNum *robot_pos_left4; // robot's joint position.
-    mjtNum *robot_pos_left5; // robot's joint position.
-
-    mjtNum *robot_pos_right1; // robot's joint position.
-    mjtNum *robot_pos_right2; // robot's joint position.
-    mjtNum *robot_pos_right3; // robot's joint position.
-    mjtNum *robot_pos_right4; // robot's joint position.
-    mjtNum *robot_pos_right5; // robot's joint position.
-
-    int lforce_num = 214; // left arm force sensor number.
-    int rforce_num = 214; // right arm force sensor number.
-
-    // cuVec3 init_offset = cuVec3(0, 2.5, -1.17);     // for bunny
-    // cuVec3 init_offset = cuVec3(0.2, 1.1, -1.0);    // for arm and joint.
-    cuVec3 init_offset = cuVec3(0.0, 1.1, 0.0);  // [used] for arm and joint.
-    cuVec3 init_rot = glm::vec3(0.0, pi_2, 0.0); // rotation
-
-    cuVec3 total_force_left = cuVec3(0.0, 0.0, 0.0);
-    cuVec3 centroid_left = cuVec3(0.0, 0.0, 0.0);
-    cuVec3 total_force_right = cuVec3(0.0, 0.0, 0.0);
-    cuVec3 centroid_right = cuVec3(0.0, 0.0, 0.0);
-
-    int body_id_upperarm_L_ = -1;
-    int body_id_upperarm_R_ = -1;
-    void applyForceToBodyChain(const mjModel *m, mjData *d,
-                               int body_id,
-                               const cuVec3 &F_world,
-                               const cuVec3 &P_world);
-
+class SimpleSoft {
   public:
-    SimpleSoft(const mjModel *m, mjData *d, int instance);
+    SimpleSoft(const mjModel* m, mjData* d, int instance);
     ~SimpleSoft() = default;
 
-    static std::optional<SimpleSoft> Create(const mjModel *m, mjData *d, int instance);
     static void RegisterPlugin();
 
-    void Reset(const mjModel *m, int instance);
-    void Compute(const mjModel *m, mjData *d, int instance);
-    void Visualize(const mjModel *m, mjData *d, mjvScene *scn, int instance);
+    void Reset(const mjModel* m, int instance);
+    void Compute(const mjModel* m, mjData* d, int instance);
+    void Visualize(const mjModel* m, mjData* d, mjvScene* scn, int instance);
 
   private:
-    void DrawCapsule(const mjModel *m, mjvScene *scn, mjtNum radius, int jid, std::shared_ptr<SDFCapsule> cap, bool is_human = false);
+    void LoadConfig(const std::string& config_path);
+    void Initializeobstracles();
+    void InitializeDeformable();
+    std::shared_ptr<Phy3DDeformableObject> LoadTetrahedralMesh(
+      const std::string& scene_path, 
+      const std::string& config_name, 
+      std::vector<std::array<mjtNum, 3>>& vert_pos, 
+      std::vector<std::array<int, 3>>& surface_tris
+    );
+    cuVec3 GetBodyPoseForSdf(const mjModel* m, const mjData* d, const std::string& body_name, const cuVec3& pos_at_body);
+    void DrawCapsule(const mjModel* m, mjvScene* scn, mjtNum radius, int lable_id, std::shared_ptr<SDFCapsule> sdf, float* rgba);
+    bool ContactPoint2Sdf(const cuVec3& p, const cuVec3& a, const cuVec3& b, double r);
 
-    void BuildBindObstracles(std::shared_ptr<Phy3DEngine> phy);
-
-    std::shared_ptr<Phy3DDeformableObject> LoadTetrahedralMesh(const std::string &scene_path, const std::string &config_name, std::vector<mjtNum> &vert_pos, std::vector<int> &surface_tris);
-
+    
     // UniX -> MuJoCo 坐标系转换工具函数, 将Y-Z轴互换
-    void UniX2MuJoCO(cuVec3 &vec)
-    {
-      std::swap(vec.y, vec.z); // Y-Z轴转换
+    void UniX2MuJoCO(cuVec3& vec) {
+        std::swap(vec.y, vec.z); // Y-Z轴转换
     }
 
-    void InitSim()
-    {
-      // std::cout << "Init.." << std::endl;
+    void InitSim() {
+        // std::cout << "Init.." << std::endl;
     }
 
-    void StartSim()
-    {
-      // std::cout << "  StartSim" << std::endl;
+    void StartSim() {
+        // std::cout << "  StartSim" << std::endl;
     }
 
-    void StepSim()
-    {
-      // std::cout << "  step.." << std::endl;
-      // for (size_t i = 0; i < m_scene->tet_objects.size(); i++) {
-      //     auto tet = m_scene->tet_objects[i];
-      //     for (size_t i = 0; i < tet->cur_pos.size(); i++) {
-      //         // std::cout << tet->cur_pos[i] << std::endl;
-      //     }
-      //     std::cout << tet->cur_pos[0] << "  " << tet->vel[0] << std::endl;
-      // }
-
-      // for (size_t i = 0; i < m_scene->obstracles.size(); i++) {
-      //     std::shared_ptr<Phy3DObstracle>& m = m_scene->obstracles[i];
-      //     std::cout << "    cur_pos: " << m->cur_pos << " " << m->vel << std::endl;
-      // }
+    void StepSim() {
+        // std::cout << "  step.." << std::endl;
     }
 
-    void SubStepSim()
-    {
-      // std::cout << "    substep.." << std::endl;
+    void SubStepSim() {
+        // std::cout << "    substep.." << std::endl;
     }
-  };
+
+    struct DeformableObject
+    {
+      std::string name;
+      double radius;
+      cuVec3 fix_point1;
+      cuVec3 fix_point2;
+      std::string bound_body;
+      cuVec3 bound_pos1;
+      cuVec3 bound_pos2;
+    };
+    
+    struct ObstracleObject
+    {
+      std::string name;
+      double radius;
+      std::string bound_body;
+      cuVec3 bound_pos1;
+      cuVec3 bound_pos2;
+    };
+
+    std::shared_ptr<Phy3DEngine> m_phy_;           ///< simulate instance.
+    std::shared_ptr<Phy3DScene>  m_scene_;         ///< simulate scene, container.
+
+    std::string model_path_;
+    bool barrier_valid_ = false;
+    bool force_feedback_ = false;
+    bool show_contact_force_ = true;
+    bool show_total_contact_force_ = true;
+    bool show_sdf_label_ = false;
+    int sim_step_ = 1;
+    double force_scale_ = 1.0;
+    double force_vis_scale_ = 1.0;
+    int max_geom_;
+    
+
+    std::vector<DeformableObject> deformable_objects_;
+    std::vector<ObstracleObject> obstracle_objects_;
+    int num_deformable_objects_ = 0;
+    int num_obstracles_ = 0;
+    std::vector<std::shared_ptr<SDFCapsule>> robot_sdf_;
+    std::vector<std::shared_ptr<Phy3DObstracle>> robot_obstracles_;
+    
+    std::vector<std::shared_ptr<Phy3DDeformableObject>> tet_obj_;
+    std::vector<std::vector<std::array<mjtNum, 3>>> vertices_pos_;
+    std::vector<std::vector<std::array<int, 3>>> surface_trangles_;
+
+    std::vector<std::shared_ptr<SDFCapsule>> human_sdf_;
+    std::vector<std::shared_ptr<Phy3DObstracle>> human_obstracles_;
+    
+    struct ContactForces{
+        //注意全部以mujoco坐标系为准
+        int from_tet_id = 0;
+        int to_sdf_id = 0;
+        std::vector<cuVec3> contact_forces = {};  
+        std::vector<cuVec3> contact_points = {};
+
+        cuVec3 total_contact_force = {0.0, 0.0, 0.0};
+        cuVec3 total_contact_force_pos = {0.0, 0.0, 0.0};
+        cuVec3 total_contact_torque = {0.0, 0.0, 0.0}; //寻找0力矩点，构成力螺旋
+
+        void clear(){
+            contact_forces.clear();
+            contact_points.clear();
+        }
+        
+        void update_total_force();
+        // void to_mj_body(const cuVec3& body_pos, bool is_robot);
+    };
+    
+    std::vector<std::vector<ContactForces>> contact_forces_;
+
+    
+};
 
 } // namespace mujoco::plugin::simplysoft

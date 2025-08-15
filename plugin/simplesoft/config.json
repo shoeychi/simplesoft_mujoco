@@ -1,0 +1,32 @@
+{
+  "model_path": "/usr/share/biulab/files",
+  "barrier_valid": false,
+  "show_contact_force": true,
+  "show_total_contact_force": true,
+  "show_sdf_label": false,
+  "force_feedback": true,
+  "sim_step": 1,
+  "force_scale": 10.0,
+  "force_vis_scale": 1.0,
+  "maxgeom": 50000,
+  "deformable_objects": [
+    {
+      "name": "test_model",
+      "radius": 0.01,
+      "fix_point1": [0.0, 0.0, 0.0],
+      "fix_point2": [0.0, 0.2, 0.0],
+      "bound_body": "limb1",
+      "bound_pos1": [0.0, 0.0, -0.1],
+      "bound_pos2": [0.0, 0.0, 0.1]
+    }
+  ],
+  "obstracles": [
+    {
+      "name": "arm1",
+      "radius": 0.035,
+      "bound_body": "rob_link2",
+      "bound_pos1": [0.0, 0.0, 0.0],
+      "bound_pos2": [0.0, 0.0, 0.4]
+    }
+  ]
+}
