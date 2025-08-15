@@ -1,0 +1,74 @@
+<mujoco model="SimpleSoft">
+    
+    <!-- 编译器选项 -->
+    <compiler meshdir="asset" texturedir="asset" autolimits="true" angle="radian" />
+
+    <!-- 0.002 is better-->
+    <option timestep="0.002" iterations="100" ls_iterations="50" solver="Newton">
+        <flag eulerdamp="enable" />
+    </option>
+
+
+    <!-- 模型统计信息 meansize: 物体的平均大小，用于自动调整渲染和相机设置 -->
+    <statistic meansize=".05" center="0 0 0.3" extent="1" />
+
+    <visual>
+        <!-- 全局背景/雾颜色和透明度 -->
+        <rgba haze="0.15 0.25 0.35 1" />
+        <!-- 相关属性扩展：offwidth,离屏渲染的​​分辨率, elevation:相机的​​仰角, azimuth:相机的​​方位角 -->
+        <global offwidth="2560" offheight="1440" elevation="-30" azimuth="120" />
+        <!-- 渲染质量设置,阴影贴图的分辨率（4096表示高质量阴影） -->
+        <quality shadowsize="4096" />
+        <!-- 渲染参数设置 -->
+        <map stiffness="700" shadowscale="0.5" fogstart="1" fogend="15" zfar="40" haze="1" force="0.1" />
+    </visual>
+
+
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1="0.52734375 0.8046875 0.91796875" rgb2="0 0 0" width="512" height="3072" />
+        <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4" />
+        <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2" />
+    </asset>
+
+
+    <extension>
+        <plugin plugin="mujoco.simplysoft" />
+    </extension>
+
+    <size memory="10M" />
+
+    <worldbody>
+        <plugin plugin="mujoco.simplysoft">
+            <config key="config" value="config.json" />
+        </plugin>
+
+        <light directional="true" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1" pos="0 0 5.0" dir="0 0 -1" castshadow="false" />
+        <light directional="true" diffuse="0.6 0.6 0.6" specular="0.2 0.2 0.2" pos="0 0 4" dir="0 0 -1" />
+        <geom name="ground" type="plane" pos="0 0 0" size="100 100 0.001" quat="1 0 0 0" material="grid" condim="3" contype="1" conaffinity="15" />
+        
+        <body name="limb1" pos="0 0 0.49" quat="0.7071 0.7071 0 0">
+            <geom name="limb1_capsule" type="capsule"  size="0.006 0.21"/>
+        </body>
+
+        <body name="rob_link1" pos="0.4 0 0.1" quat="1 0 0 0">
+            <geom name="rob_link1_capsule" type="capsule" size="0.03 0.2" pos="0 0 0.2"/>
+            <joint name="J1" type="hinge" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708"/>
+            <body name="rob_link2" pos="0 0 0.4" quat="1 0 0 0">
+                <geom name="rob_link2_capsule" type="capsule" size="0.03 0.2" pos="0 0 0.2"/>
+                <joint name="J2" type="hinge" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708"/>
+                <body name="rob_link3" pos="0 0 0.4" quat="1 0 0 0">
+                    <geom name="rob_link3_capsule" type="capsule" size="0.03 0.1" pos="0 0 0.1"/>
+                    <joint name="J3" type="hinge" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708"/>
+                </body>
+            </body>
+        </body>
+
+    </worldbody>
+
+    <actuator>
+        <position name="J1" joint="J1" ctrllimited="true" ctrlrange="-1.2 0.1" forcelimited="true" forcerange="-1000 1000" kp="1000" kv="20"/>
+        <position name="J2" joint="J2" ctrllimited="true" ctrlrange="-0.5 0.1" forcelimited="true" forcerange="-1000 1000" kp="100" kv="5"/>
+        <position name="J3" joint="J3" ctrllimited="true" ctrlrange="-1.2 0.1" forcelimited="true" forcerange="-100 100" kp="10" kv="0.2"/>
+    </actuator>
+
+</mujoco>
