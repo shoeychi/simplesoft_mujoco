@@ -3,6 +3,7 @@ simulate/
 sample/
 model/*
 !model/plugin
+!model/CMakeLists.txt
 plugin/*
 !plugin/simplesoft
 
