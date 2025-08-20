@@ -59,56 +59,8 @@ namespace mujoco::plugin::simplysoft
     void LoadConfig(const std::string &config_path);
   };
 
-  class SimpleSoft
+  struct PhyscisEngineData
   {
-  public:
-    SimpleSoft(const mjModel *m, int instance);
-    ~SimpleSoft() = default;
-
-    static void RegisterPlugin();
-
-    void Reset(const mjModel *m, int instance);
-    void Compute(const mjModel *m, mjData *d, int instance);
-    void Visualize(const mjModel *m, mjData *d, mjvScene *scn, int instance);
-    SimpleSoft &operator=(const SimpleSoft &o);
-
-  private:
-    void Init();
-    void Initializeobstracles();
-    void InitializeDeformable();
-    std::shared_ptr<Phy3DDeformableObject> LoadTetrahedralMesh(const std::string &scene_path,
-                                                               const std::string &config_name,
-                                                               std::vector<std::array<mjtNum, 3>> &vert_pos,
-                                                               std::vector<std::array<int, 3>> &surface_tris);
-    cuVec3 GetBodyPoseForSdf(const mjModel *m, const mjData *d, const std::string &body_name, const cuVec3 &pos_at_body);
-    void DrawCapsule(const mjModel *m, mjvScene *scn, mjtNum radius, int lable_id, std::shared_ptr<SDFCapsule> sdf, float *rgba);
-    bool ContactPoint2Sdf(const cuVec3 &p, const cuVec3 &a, const cuVec3 &b, double r);
-
-    // UniX -> MuJoCo 坐标系转换工具函数, 将Y-Z轴互换
-    inline void UniX2MuJoCO(cuVec3 &vec)
-    {
-      std::swap(vec.y, vec.z); // Y-Z轴转换
-    }
-
-    void InitSim()
-    {
-      // std::cout << "Init.." << std::endl;
-    }
-
-    void StartSim()
-    {
-      // std::cout << "  StartSim" << std::endl;
-    }
-
-    void StepSim()
-    {
-      // std::cout << "  step.." << std::endl;
-    }
-
-    void SubStepSim()
-    {
-      // std::cout << "    substep.." << std::endl;
-    }
 
     std::shared_ptr<Phy3DEngine> m_phy_;  ///< simulate instance.
     std::shared_ptr<Phy3DScene> m_scene_; ///< simulate scene, container.
@@ -156,7 +108,56 @@ namespace mujoco::plugin::simplysoft
     };
 
     std::vector<std::vector<ContactForces>> contact_forces_;
-    static SoftDef *softDef_;
+    explicit PhyscisEngineData(SoftDef *softDef_);
+    SoftDef *softDef_;
+
+  private:
+    void Initializeobstracles();
+    void InitializeDeformable();
+    std::shared_ptr<Phy3DDeformableObject> LoadTetrahedralMesh(const std::string &scene_path,
+                                                               const std::string &config_name,
+                                                               std::vector<std::array<mjtNum, 3>> &vert_pos,
+                                                               std::vector<std::array<int, 3>> &surface_tris);
+  };
+
+  class SimpleSoft
+  {
+  public:
+    SimpleSoft(const mjModel *m, int instance);
+    ~SimpleSoft() = default;
+
+    static void RegisterPlugin();
+
+    void Reset(const mjModel *m, int instance);
+    void Compute(const mjModel *m, mjData *d, int instance);
+    void Visualize(const mjModel *m, mjData *d, mjvScene *scn, int instance);
+
+  private:
+    cuVec3 GetBodyPoseForSdf(const mjModel *m, const mjData *d, const std::string &body_name, const cuVec3 &pos_at_body);
+    void DrawCapsule(const mjModel *m, mjvScene *scn, mjtNum radius, int lable_id, std::shared_ptr<SDFCapsule> sdf, float *rgba);
+    bool ContactPoint2Sdf(const cuVec3 &p, const cuVec3 &a, const cuVec3 &b, double r);
+
+    void InitSim()
+    {
+      // std::cout << "Init.." << std::endl;
+    }
+
+    void StartSim()
+    {
+      // std::cout << "  StartSim" << std::endl;
+    }
+
+    void StepSim()
+    {
+      // std::cout << "  step.." << std::endl;
+    }
+
+    void SubStepSim()
+    {
+      // std::cout << "    substep.." << std::endl;
+    }
+
+    static PhyscisEngineData *phyEngData_;
   };
 
 } // namespace mujoco::plugin::simplysoft
