@@ -44,7 +44,7 @@ namespace mujoco::plugin::simplysoft
         plugin.init = +[](const mjModel *m, mjData *d, int instance)
         {
             // 无法避免初始化两次，第一次是检查
-            d->plugin_data[instance] = reinterpret_cast<uintptr_t>(new SimpleSoft(m, d, instance));
+            d->plugin_data[instance] = reinterpret_cast<uintptr_t>(new SimpleSoft(m, instance));
             return 0;
         };
 
@@ -77,7 +77,20 @@ namespace mujoco::plugin::simplysoft
         mjp_registerPlugin(&plugin);
     }
 
-    SimpleSoft::SimpleSoft(const mjModel *m, mjData *d, int instance)
+    SoftDef *SimpleSoft::softDef_ = nullptr;
+    SimpleSoft::SimpleSoft(const mjModel *m, int instance)
+    {
+        // 读取配置文件
+        if (softDef_ == nullptr)
+        {
+            softDef_ = new SoftDef();
+            std::string config_file = mj_getPluginConfig(m, instance, "config");
+            softDef_->LoadConfig(config_file);
+        }
+        Init();
+    }
+
+    void SimpleSoft::Init()
     {
         // 初始化Phy3D对象
         m_phy_ = std::make_shared<Phy3DEngine>();
@@ -88,10 +101,6 @@ namespace mujoco::plugin::simplysoft
         m_phy_->registerStepCallback(this, &SimpleSoft::StepSim);
         m_phy_->registerSubStepCallback(this, &SimpleSoft::SubStepSim);
 
-        // 读取配置文件
-        std::string config_file = mj_getPluginConfig(m, instance, "config");
-        LoadConfig(config_file);
-
         // 初始化obstracles
         Initializeobstracles();
 
@@ -100,10 +109,10 @@ namespace mujoco::plugin::simplysoft
 
         // 初始化接触力
         contact_forces_.clear();
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
             std::vector<ContactForces> cfs = {};
-            for (int j = 0; j < num_obstracles_; ++j)
+            for (int j = 0; j < softDef_->num_obstracles_; ++j)
             {
                 ContactForces cf;
                 cf.from_tet_id = i;
@@ -114,13 +123,18 @@ namespace mujoco::plugin::simplysoft
         }
     }
 
-    void SimpleSoft::LoadConfig(const std::string &config_path)
+    void SoftDef::LoadConfig(const std::string &config_path)
     {
         // std::filesystem::path relative_path = "plugin/simplesoft/config.json";
         // std::filesystem::path path = std::filesystem::absolute(relative_path);
-        std::cout << "config-file: " << config_path << std::endl;
+        // std::cout << "config-file: " << config_path << std::endl;
 
         std::ifstream config_file(config_path);
+        if (!config_file.good())
+        {
+            std::cout << "load config file failed.\n File = " << config_path << std::endl;
+            return;
+        }
         nlohmann::json config = nlohmann::json::parse(config_file);
 
         model_path_ = config["model_path"];
@@ -169,14 +183,14 @@ namespace mujoco::plugin::simplysoft
 
     void SimpleSoft::Initializeobstracles()
     {
-        for (int i = 0; i < num_obstracles_; ++i)
+        for (int i = 0; i < softDef_->num_obstracles_; ++i)
         {
             auto sdf = std::make_shared<SDFCapsule>();
-            sdf->r = obstracle_objects_[i].radius;
+            sdf->r = softDef_->obstracle_objects_[i].radius;
 
             auto obstracle = std::make_shared<Phy3DObstracle>();
             obstracle->m_sdf = sdf;
-            obstracle->m_sdf->radius = obstracle_objects_[i].radius;
+            obstracle->m_sdf->radius = softDef_->obstracle_objects_[i].radius;
             obstracle->fixed = true;
             obstracle->m_sdf->pos = cuVec3(0.0, 0.0, 0.0); // clear position
             obstracle->pos = obstracle->m_sdf->pos;
@@ -191,23 +205,23 @@ namespace mujoco::plugin::simplysoft
     void SimpleSoft::InitializeDeformable()
     {
         // 导入deformable model
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
             std::vector<std::array<mjtNum, 3>> vertex_pos;
             std::vector<std::array<int, 3>> surface_trangle;
-            auto tet_obj = LoadTetrahedralMesh(model_path_, deformable_objects_[i].name, vertex_pos, surface_trangle);
+            auto tet_obj = LoadTetrahedralMesh(softDef_->model_path_, softDef_->deformable_objects_[0].name, vertex_pos, surface_trangle);
             tet_obj_.push_back(tet_obj);
             vertices_pos_.push_back(vertex_pos);
             surface_trangles_.push_back(surface_trangle);
         }
 
         // 初始化hunman obstracles
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
             auto sdf = std::make_shared<SDFCapsule>();
-            sdf->a = deformable_objects_[i].fix_point1;
-            sdf->b = deformable_objects_[i].fix_point2;
-            sdf->r = deformable_objects_[i].radius;
+            sdf->a = softDef_->deformable_objects_[i].fix_point1;
+            sdf->b = softDef_->deformable_objects_[i].fix_point2;
+            sdf->r = softDef_->deformable_objects_[i].radius;
             auto obstracle = std::make_shared<Phy3DObstracle>();
             obstracle->m_sdf = sdf;
 
@@ -217,7 +231,7 @@ namespace mujoco::plugin::simplysoft
         }
 
         // human sdf和deformable绑定
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
             auto tet_obj = m_phy_->m_phy_scene->tet_objects[i];
             auto skin_SDF_obj = std::make_shared<SkiningSDFObject>();
@@ -240,7 +254,7 @@ namespace mujoco::plugin::simplysoft
         m_phy_->config->inner_fixed = true; // set fall down
         m_phy_->config->pos = cuVec3(0.0, 0.0, 0.0);
         m_phy_->config->rot = glm::vec3(0.0, 0.0, 0.0);
-        m_phy_->config->barrier_soft_rigid_valid = barrier_valid_;
+        m_phy_->config->barrier_soft_rigid_valid = softDef_->barrier_valid_;
         m_phy_->config->border.min = cuVec3(-10.0, -10.0, -10.0);
         m_phy_->config->border.max = cuVec3(10.0, 10.0, 10.0);
 
@@ -271,7 +285,7 @@ namespace mujoco::plugin::simplysoft
         CreateRandomDistanceConstraints(m_phy_, tet_obj, m_phy_->config);
         CreateDirectConstraints(m_phy_, tet_obj, m_phy_->config);
 
-        for (int i = 0; i < num_obstracles_; ++i)
+        for (int i = 0; i < softDef_->num_obstracles_; ++i)
         {
             std::shared_ptr<Phy3DObstracle> RigidBody = m_phy_->m_phy_scene->obstracles[i];
             CreateBarrierConstraints(m_phy_, tet_obj, RigidBody, m_phy_->config);
@@ -295,7 +309,6 @@ namespace mujoco::plugin::simplysoft
             std::array<mjtNum, 3> v_pos = {pos.x, pos.y, pos.z};
             vert_pos.push_back(v_pos);
         }
-
         return tet_obj;
     }
 
@@ -314,19 +327,19 @@ namespace mujoco::plugin::simplysoft
             mj_forward(m, d);
         }
 
-        if (compute_counter % sim_step_ != 0)
+        if (compute_counter % softDef_->sim_step_ != 0)
             return;
 
         // 执行软体pbd仿真
         m_phy_->config->step_one = true;
-        cuType dt = m->opt.timestep * sim_step_;
+        cuType dt = m->opt.timestep * softDef_->sim_step_;
         m_phy_->SimlateStep(dt);
 
         // 更新human sdf位置
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
-            cuVec3 pos1 = GetBodyPoseForSdf(m, d, deformable_objects_[i].bound_body, deformable_objects_[i].bound_pos1);
-            cuVec3 pos2 = GetBodyPoseForSdf(m, d, deformable_objects_[i].bound_body, deformable_objects_[i].bound_pos2);
+            cuVec3 pos1 = GetBodyPoseForSdf(m, d, softDef_->deformable_objects_[i].bound_body, softDef_->deformable_objects_[i].bound_pos1);
+            cuVec3 pos2 = GetBodyPoseForSdf(m, d, softDef_->deformable_objects_[i].bound_body, softDef_->deformable_objects_[i].bound_pos2);
             UniX2MuJoCO(pos1);
             UniX2MuJoCO(pos2);
             human_sdf_[i]->a = pos1; // set position,
@@ -334,10 +347,10 @@ namespace mujoco::plugin::simplysoft
         }
 
         // 更新robot sdf位置
-        for (int i = 0; i < num_obstracles_; ++i)
+        for (int i = 0; i < softDef_->num_obstracles_; ++i)
         {
-            cuVec3 pos1 = GetBodyPoseForSdf(m, d, obstracle_objects_[i].bound_body, obstracle_objects_[i].bound_pos1);
-            cuVec3 pos2 = GetBodyPoseForSdf(m, d, obstracle_objects_[i].bound_body, obstracle_objects_[i].bound_pos2);
+            cuVec3 pos1 = GetBodyPoseForSdf(m, d, softDef_->obstracle_objects_[i].bound_body, softDef_->obstracle_objects_[i].bound_pos1);
+            cuVec3 pos2 = GetBodyPoseForSdf(m, d, softDef_->obstracle_objects_[i].bound_body, softDef_->obstracle_objects_[i].bound_pos2);
             UniX2MuJoCO(pos1);
             UniX2MuJoCO(pos2);
             robot_sdf_[i]->a = pos1; // set position,
@@ -345,21 +358,21 @@ namespace mujoco::plugin::simplysoft
         }
 
         // 更新接触力
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
-            for (int j = 0; j < num_obstracles_; ++j)
+            for (int j = 0; j < softDef_->num_obstracles_; ++j)
             {
                 contact_forces_[i][j].clear();
             }
         }
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
             auto forces = m_phy_->m_phy_scene->tet_objects[i]->sampled_force;
             for (size_t j = 0; j < forces.size(); ++j)
             {
                 auto pos = forces[j].pos;
                 auto f = forces[j].f;
-                for (int k = 0; k < num_obstracles_; ++k)
+                for (int k = 0; k < softDef_->num_obstracles_; ++k)
                 {
                     auto a = robot_sdf_[k]->a;
                     auto b = robot_sdf_[k]->b;
@@ -368,37 +381,37 @@ namespace mujoco::plugin::simplysoft
                     {
                         UniX2MuJoCO(pos);
                         UniX2MuJoCO(f);
-                        contact_forces_[i][k].contact_forces.push_back(f * force_scale_);
+                        contact_forces_[i][k].contact_forces.push_back(f * softDef_->force_scale_);
                         contact_forces_[i][k].contact_points.push_back(pos);
                     }
                 }
             }
         }
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
-            for (int j = 0; j < num_obstracles_; ++j)
+            for (int j = 0; j < softDef_->num_obstracles_; ++j)
             {
                 contact_forces_[i][j].update_total_force();
             }
         }
 
         // 施加接触力到mujoco body上（TODO：有问题，时加的力似乎是不断叠加的）
-        if (force_feedback_)
+        if (softDef_->force_feedback_)
         {
             for (int i = 0; i < m->nv; ++i)
             {
                 d->qfrc_applied[i] = 0.0; // 先把外力置0，否则会持续叠加，这里会不会有问题，TODO：待重力测试
             }
 
-            for (int i = 0; i < num_deformable_objects_; ++i)
+            for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
             {
-                for (int j = 0; j < num_obstracles_; ++j)
+                for (int j = 0; j < softDef_->num_obstracles_; ++j)
                 {
                     auto f = contact_forces_[i][j].total_contact_force;
                     auto t = contact_forces_[i][j].total_contact_torque;
                     auto p = contact_forces_[i][j].total_contact_force_pos;
-                    int rob_body_id = mj_name2id(m, mjOBJ_BODY, obstracle_objects_[j].bound_body.c_str());
-                    int hum_body_id = mj_name2id(m, mjOBJ_BODY, deformable_objects_[i].bound_body.c_str());
+                    int rob_body_id = mj_name2id(m, mjOBJ_BODY, softDef_->obstracle_objects_[j].bound_body.c_str());
+                    int hum_body_id = mj_name2id(m, mjOBJ_BODY, softDef_->deformable_objects_[i].bound_body.c_str());
 
                     mjtNum force[3] = {f.x, f.y, f.z};
                     mjtNum torque[3] = {t.x, t.y, t.z};
@@ -534,15 +547,15 @@ namespace mujoco::plugin::simplysoft
         float rgba_red[4] = {1.0f, 0.3f, 0.2f, 1.0f};  // red
 
         // 画出deformable object sdf
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
-            DrawCapsule(m, scn, deformable_objects_[i].radius, i + 200, human_sdf_[i], rgba_red);
+            DrawCapsule(m, scn, softDef_->deformable_objects_[i].radius, i + 200, human_sdf_[i], rgba_red);
         }
 
         // 画出obstracle object sdf
-        for (int i = 0; i < num_obstracles_; ++i)
+        for (int i = 0; i < softDef_->num_obstracles_; ++i)
         {
-            DrawCapsule(m, scn, obstracle_objects_[i].radius, i + 100, robot_sdf_[i], rgba_blue);
+            DrawCapsule(m, scn, softDef_->obstracle_objects_[i].radius, i + 100, robot_sdf_[i], rgba_blue);
         }
 
         // 更新节点位置
@@ -559,9 +572,9 @@ namespace mujoco::plugin::simplysoft
             }
         }
 
-        scn->maxgeom = max_geom_; // TODO: 去掉重复的线，减少visual geom数量。
+        scn->maxgeom = softDef_->max_geom_; // TODO: 去掉重复的线，减少visual geom数量。
         // 画出mesh
-        for (int i = 0; i < num_deformable_objects_; ++i)
+        for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
         {
             for (size_t j = 0; j < surface_trangles_[i].size(); ++j)
             {
@@ -589,9 +602,9 @@ namespace mujoco::plugin::simplysoft
         }
 
         // 接触力可视化（TODO: 去掉非必要节点的力，减少visual geom数量。）
-        if (show_contact_force_)
+        if (softDef_->show_contact_force_)
         {
-            for (int j = 0; j < num_deformable_objects_; ++j)
+            for (int j = 0; j < softDef_->num_deformable_objects_; ++j)
             {
                 auto forces = tet_obj_[j]->sampled_force;
                 for (size_t i = 0; i < forces.size(); i++)
@@ -602,7 +615,7 @@ namespace mujoco::plugin::simplysoft
                     geom->objtype = mjOBJ_UNKNOWN;
 
                     auto pos = forces[i].pos;
-                    auto f = forces[i].f * force_scale_ * force_vis_scale_;
+                    auto f = forces[i].f * softDef_->force_scale_ * softDef_->force_vis_scale_;
                     UniX2MuJoCO(pos);
                     UniX2MuJoCO(f);
 
@@ -613,11 +626,11 @@ namespace mujoco::plugin::simplysoft
             }
         }
 
-        if (show_total_contact_force_)
+        if (softDef_->show_total_contact_force_)
         {
-            for (int i = 0; i < num_deformable_objects_; ++i)
+            for (int i = 0; i < softDef_->num_deformable_objects_; ++i)
             {
-                for (int j = 0; j < num_obstracles_; ++j)
+                for (int j = 0; j < softDef_->num_obstracles_; ++j)
                 {
                     {
                         mjvGeom *geom = &scn->geoms[scn->ngeom++];
@@ -626,7 +639,7 @@ namespace mujoco::plugin::simplysoft
                         geom->objtype = mjOBJ_UNKNOWN;
 
                         auto pos = contact_forces_[i][j].total_contact_force_pos;
-                        auto f = contact_forces_[i][j].total_contact_force * force_vis_scale_;
+                        auto f = contact_forces_[i][j].total_contact_force * softDef_->force_vis_scale_;
 
                         const mjtNum from[3] = {pos.x, pos.y, pos.z};
                         const mjtNum to[3] = {pos.x + f.x, pos.y + f.y, pos.z + f.z};
@@ -640,7 +653,7 @@ namespace mujoco::plugin::simplysoft
                         geom->objtype = mjOBJ_UNKNOWN;
 
                         auto pos = contact_forces_[i][j].total_contact_force_pos;
-                        auto f = contact_forces_[i][j].total_contact_torque * force_vis_scale_;
+                        auto f = contact_forces_[i][j].total_contact_torque * softDef_->force_vis_scale_;
 
                         const mjtNum from[3] = {pos.x, pos.y, pos.z};
                         const mjtNum to[3] = {pos.x + f.x, pos.y + f.y, pos.z + f.z};
@@ -661,10 +674,77 @@ namespace mujoco::plugin::simplysoft
         mjtNum pos_1[3] = {pp1.x, pp1.y, pp1.z};
         mjtNum pos_2[3] = {pp2.x, pp2.y, pp2.z};
         mjvGeom *capsule = AddCapsuleToScene(pos_1, pos_2, radius, rgba, scn);
-        if (show_sdf_label_)
+        if (softDef_->show_sdf_label_)
         {
             makeLabelX(m, mjOBJ_GEOM, lable_id, capsule->label);
         }
+    }
+
+    SimpleSoft &SimpleSoft::operator=(const SimpleSoft &o)
+    {
+        *this->m_phy_ = *o.m_phy_;
+        *this->m_scene_ = *o.m_scene_;
+        this->human_obstracles_.resize(o.human_obstracles_.size());
+        for (size_t i = 0; i < o.human_obstracles_.size(); ++i)
+        {
+            *human_obstracles_[i] = *o.human_obstracles_[i];
+        }
+        // std::copy(o.human_obstracles_.begin(), o.human_obstracles_.end(), this->human_obstracles_.begin());
+        this->human_sdf_.resize(o.human_sdf_.size());
+        for (size_t i = 0; i < o.human_sdf_.size(); ++i)
+        {
+            *human_sdf_[i] = *o.human_sdf_[i];
+        }
+        // std::copy(o.human_sdf_.begin(), o.human_sdf_.end(), this->human_sdf_.begin());
+        this->robot_sdf_.resize(o.robot_sdf_.size());
+        for (size_t i = 0; i < o.robot_sdf_.size(); ++i)
+        {
+            *robot_sdf_[i] = *o.robot_sdf_[i];
+        }
+        // std::copy(o.robot_sdf_.begin(), o.robot_sdf_.end(), this->robot_sdf_.begin());
+        this->robot_obstracles_.resize(o.robot_obstracles_.size());
+        for (size_t i = 0; i < o.robot_obstracles_.size(); ++i)
+        {
+            *robot_obstracles_[i] = *o.robot_obstracles_[i];
+        }
+        // std::copy(o.robot_obstracles_.begin(), o.robot_obstracles_.end(), this->robot_obstracles_.begin());
+        this->tet_obj_.resize(o.tet_obj_.size());
+        for (size_t i = 0; i < o.tet_obj_.size(); ++i)
+        {
+            *tet_obj_[i] = *o.tet_obj_[i];
+        }
+        // std::copy(o.tet_obj_.begin(), o.tet_obj_.end(), this->tet_obj_.begin());
+
+        for (const auto &inner_vector : o.vertices_pos_)
+        {
+            std::vector<std::array<mjtNum, 3>> temp_vector;
+            for (const auto &in2 : inner_vector)
+            {
+                std::array<mjtNum, 3> tmp;
+                std::copy(in2.begin(), in2.end(), tmp.begin());
+                temp_vector.push_back(tmp);
+            }
+            this->vertices_pos_.push_back(temp_vector);
+        }
+        for (const auto &inner_vector : o.surface_trangles_)
+        {
+            std::vector<std::array<int, 3>> temp_vector;
+            for (const auto &in2 : inner_vector)
+            {
+                std::array<int, 3> tmp;
+                std::copy(in2.begin(), in2.end(), tmp.begin());
+                temp_vector.push_back(tmp);
+            }
+            this->surface_trangles_.push_back(temp_vector);
+        }
+
+        for (const auto &inner_vector : o.contact_forces_)
+        {
+            std::vector<ContactForces> temp_vector;
+            std::copy(inner_vector.begin(), inner_vector.end(), temp_vector.begin());
+            this->contact_forces_.push_back(temp_vector);
+        }
+        return *this;
     }
 
 } // namespace mujoco::plugin::simplysoft
