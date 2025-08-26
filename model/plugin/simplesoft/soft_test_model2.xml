@@ -39,7 +39,7 @@
 
     <worldbody>
         <plugin plugin="mujoco.simplysoft">
-            <config key="config" value="/home/ljc/ljc/mujoco-soft/simplesoft_mujoco/model/plugin/simplesoft/config_test_model2.json" />
+            <config key="config" value="model/plugin/simplesoft/config_test_model2.json" />
         </plugin>
 
         <light directional="true" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1" pos="0 0 5.0" dir="0 0 -1" castshadow="false" />

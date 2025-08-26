@@ -6,6 +6,8 @@ set(MUJOCO_simplysoft_SRCS
     Soft.cc
     register.cc
     SoftHelper.cc
+    SoftDef.cc
+    PhyscisEngineData.cc
 )
 
 # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/biulab/cmakes")
