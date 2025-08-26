@@ -6,4 +6,4 @@ model/*
 !model/CMakeLists.txt
 plugin/*
 !plugin/simplesoft
-
+MUJOCO_LOG.TXT

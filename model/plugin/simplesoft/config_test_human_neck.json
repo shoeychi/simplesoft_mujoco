@@ -1,0 +1,35 @@
+{
+  "model_path": "/usr/share/biulab/files",
+  "barrier_valid": false,
+  "show_contact_force": true,
+  "show_total_contact_force": true,
+  "show_sdf_label": false,
+  "force_feedback": true,
+  "sim_step": 1,
+  "force_scale": 10.0,
+  "force_vis_scale": 1.0,
+  "maxgeom": 1000000,
+  "deformable_objects": [
+    {
+      "name": "human_neck",
+      "radius": 0.001,
+      "fix_point1": [0.02857199, 0.35109317, 0.01176413],
+      "fix_point2": [-0.06072697, 0.25083792, 0.0021962],
+      "dir_point": [0.04990939, 0.25045505, -0.00139628],
+      "dir_point_id": 5824,
+      "bound_body": "human",
+      "bound_pos1": [0.02857199, 0.35109317, 0.01176413], 
+      "bound_pos2": [-0.06072697, 0.25083792, 0.0021962],
+      "bound_dir_pos": [0.04990939, 0.25045505, -0.00139628]
+    }
+  ],
+  "obstracles": [
+    {
+      "name": "arm1",
+      "radius": 0.035,
+      "bound_body": "rob_link2",
+      "bound_pos1": [0.0, 0.0, 0.0],
+      "bound_pos2": [0.0, 0.0, 0.4]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "model_path": "/usr/share/biulab/files",
+  "barrier_valid": false,
+  "show_contact_force": true,
+  "show_total_contact_force": true,
+  "show_sdf_label": false,
+  "force_feedback": true,
+  "sim_step": 1,
+  "force_scale": 10.0,
+  "force_vis_scale": 1.0,
+  "maxgeom": 1000000,
+  "deformable_objects": [
+    {
+      "name": "human_left_shoulder",
+      "radius": 0.001,
+      "fix_point1": [0.08131254, 0.16104139, 0.04331423],
+      "fix_point2": [0.27555799, 0.23561852, -0.03138361],
+      "dir_point": [0.08010502, 0.22854416, -0.07094003],
+      "dir_point_id": 7150,
+      "bound_body": "human",
+      "bound_pos1": [0.08131254, 0.16104139, 0.04331423], 
+      "bound_pos2": [0.27555799, 0.23561852, -0.03138361],
+      "bound_dir_pos": [0.08010502, 0.22854416, -0.07094003]
+    }
+  ],
+  "obstracles": [
+    {
+      "name": "arm1",
+      "radius": 0.035,
+      "bound_body": "rob_link2",
+      "bound_pos1": [0.0, 0.0, 0.0],
+      "bound_pos2": [0.0, 0.0, 0.4]
+    }
+  ]
+}
