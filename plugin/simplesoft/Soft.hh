@@ -28,9 +28,12 @@ namespace mujoco::plugin::simplysoft
       double radius;
       cuVec3 fix_point1;
       cuVec3 fix_point2;
+      cuVec3 dir_point;
+      int dir_point_id;
       std::string bound_body;
       cuVec3 bound_pos1;
       cuVec3 bound_pos2;
+      cuVec3 bound_dir_pos;
     };
 
     struct ObstracleObject
@@ -41,6 +44,7 @@ namespace mujoco::plugin::simplysoft
       cuVec3 bound_pos1;
       cuVec3 bound_pos2;
     };
+
     std::string model_path_;
     bool barrier_valid_ = false;
     bool force_feedback_ = false;
@@ -74,10 +78,10 @@ namespace mujoco::plugin::simplysoft
     std::vector<std::shared_ptr<Phy3DDeformableObject>> tet_obj_;
     std::vector<std::vector<std::array<mjtNum, 3>>> vertices_pos_;
     std::vector<std::vector<std::array<int, 3>>> surface_trangles_;
+    std::vector<std::vector<std::array<int, 2>>> edges_;
 
     struct ContactForces
     {
-      // 注意全部以mujoco坐标系为准
       int from_tet_id = 0;
       int to_sdf_id = 0;
       std::vector<cuVec3> contact_forces = {};
@@ -104,10 +108,11 @@ namespace mujoco::plugin::simplysoft
         std::copy(o.contact_points.begin(), o.contact_points.end(), contact_points.begin());
         return *this;
       }
-      // void to_mj_body(const cuVec3& body_pos, bool is_robot);
     };
 
     std::vector<std::vector<ContactForces>> contact_forces_;
+    std::vector<double> tet_rotation_ang_;
+
     explicit PhyscisEngineData(SoftDef *softDef_);
     SoftDef *softDef_;
 
@@ -117,7 +122,8 @@ namespace mujoco::plugin::simplysoft
     std::shared_ptr<Phy3DDeformableObject> LoadTetrahedralMesh(const std::string &scene_path,
                                                                const std::string &config_name,
                                                                std::vector<std::array<mjtNum, 3>> &vert_pos,
-                                                               std::vector<std::array<int, 3>> &surface_tris);
+                                                               std::vector<std::array<int, 3>> &surface_tris,
+                                                               std::vector<std::array<int, 2>>& edges);
   };
 
   class SimpleSoft
@@ -134,6 +140,7 @@ namespace mujoco::plugin::simplysoft
 
   private:
     cuVec3 GetBodyPoseForSdf(const mjModel *m, const mjData *d, const std::string &body_name, const cuVec3 &pos_at_body);
+    double GetRotationAngle(const cuVec3& pos1, const cuVec3& pos2, const cuVec3& pos_dir1, const cuVec3& pos_dir2);
     void DrawCapsule(const mjModel *m, mjvScene *scn, mjtNum radius, int lable_id, std::shared_ptr<SDFCapsule> sdf, float *rgba);
     bool ContactPoint2Sdf(const cuVec3 &p, const cuVec3 &a, const cuVec3 &b, double r);
 

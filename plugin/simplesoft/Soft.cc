@@ -24,11 +24,6 @@
 
 namespace mujoco::plugin::simplysoft
 {
-    // UniX -> MuJoCo 坐标系转换工具函数, 将Y-Z轴互换
-    void UniX2MuJoCO(cuVec3 &vec)
-    {
-        std::swap(vec.y, vec.z); // Y-Z轴转换
-    }
     void SimpleSoft::RegisterPlugin()
     {
         mjpPlugin plugin;
@@ -41,7 +36,6 @@ namespace mujoco::plugin::simplysoft
         const char *attributes[] = {"config"};
         plugin.nattribute = sizeof(attributes) / sizeof(attributes[0]);
         plugin.attributes = attributes;
-        // plugin.nstate            = +[](const mjModel* m, int instance) { return 214 * 3 * 2; }; // return force number  ???什么作用???
         plugin.nstate = +[](const mjModel *m, int instance)
         { return 0; };
 
@@ -130,10 +124,6 @@ namespace mujoco::plugin::simplysoft
 
     void SoftDef::LoadConfig(const std::string &config_path)
     {
-        // std::filesystem::path relative_path = "plugin/simplesoft/config.json";
-        // std::filesystem::path path = std::filesystem::absolute(relative_path);
-        // std::cout << "config-file: " << config_path << std::endl;
-
         std::ifstream config_file(config_path);
         if (!config_file.good())
         {
@@ -160,13 +150,18 @@ namespace mujoco::plugin::simplysoft
             object.radius = obj_cfg["radius"];
             std::vector<double> p1 = obj_cfg["fix_point1"];
             std::vector<double> p2 = obj_cfg["fix_point2"];
+            std::vector<double> pd = obj_cfg["dir_point"];
             object.fix_point1 = cuVec3(p1[0], p1[1], p1[2]);
             object.fix_point2 = cuVec3(p2[0], p2[1], p2[2]);
+            object.dir_point = cuVec3(pd[0], pd[1], pd[2]);
+            object.dir_point_id = obj_cfg["dir_point_id"];
             object.bound_body = obj_cfg["bound_body"];
             std::vector<double> p3 = obj_cfg["bound_pos1"];
             std::vector<double> p4 = obj_cfg["bound_pos2"];
+            std::vector<double> p5 = obj_cfg["bound_dir_pos"];
             object.bound_pos1 = cuVec3(p3[0], p3[1], p3[2]);
             object.bound_pos2 = cuVec3(p4[0], p4[1], p4[2]);
+            object.bound_dir_pos = cuVec3(p5[0], p5[1], p5[2]);
             deformable_objects_.push_back(object);
         }
         num_deformable_objects_ = deformable_objects_.size();
@@ -214,10 +209,14 @@ namespace mujoco::plugin::simplysoft
         {
             std::vector<std::array<mjtNum, 3>> vertex_pos;
             std::vector<std::array<int, 3>> surface_trangle;
-            auto tet_obj = LoadTetrahedralMesh(softDef_->model_path_, softDef_->deformable_objects_[0].name, vertex_pos, surface_trangle);
+            std::vector<std::array<int, 2>> edge;
+            auto tet_obj = LoadTetrahedralMesh(softDef_->model_path_, softDef_->deformable_objects_[0].name, vertex_pos, surface_trangle, edge);
             tet_obj_.push_back(tet_obj);
             vertices_pos_.push_back(vertex_pos);
             surface_trangles_.push_back(surface_trangle);
+            edges_.push_back(edge);
+
+            tet_rotation_ang_.push_back(0.0);
         }
 
         // 初始化hunman obstracles
@@ -227,6 +226,7 @@ namespace mujoco::plugin::simplysoft
             sdf->a = softDef_->deformable_objects_[i].fix_point1;
             sdf->b = softDef_->deformable_objects_[i].fix_point2;
             sdf->r = softDef_->deformable_objects_[i].radius;
+            sdf->ang = 0.0;
             auto obstracle = std::make_shared<Phy3DObstracle>();
             obstracle->m_sdf = sdf;
 
@@ -247,7 +247,7 @@ namespace mujoco::plugin::simplysoft
         }
     }
 
-    std::shared_ptr<Phy3DDeformableObject> PhyscisEngineData::LoadTetrahedralMesh(const std::string &scene_path, const std::string &config_name, std::vector<std::array<mjtNum, 3>> &vert_pos, std::vector<std::array<int, 3>> &surface_tris)
+    std::shared_ptr<Phy3DDeformableObject> PhyscisEngineData::LoadTetrahedralMesh(const std::string &scene_path, const std::string &config_name, std::vector<std::array<mjtNum, 3>> &vert_pos, std::vector<std::array<int, 3>> &surface_tris, std::vector<std::array<int, 2>>& edges)
     {
         m_phy_->config->scene_folder = scene_path;
         m_phy_->config->GetAllConfigs();
@@ -310,10 +310,31 @@ namespace mujoco::plugin::simplysoft
         {
             cuVec3 pos = tet_obj->verts[i].data;
             pos = tet_obj->GetGlobalPos(pos);
-            UniX2MuJoCO(pos);
             std::array<mjtNum, 3> v_pos = {pos.x, pos.y, pos.z};
             vert_pos.push_back(v_pos);
         }
+
+        edges.clear();
+        for (size_t i = 0; i < surface_tris.size(); ++i)
+        {
+            for (int j = 0; j < 3; ++j){
+                int n = j+1;
+                if (n == 3) n = 0;
+
+                std::array<int, 2> edge = {surface_tris[i][j], surface_tris[i][n]};
+                if (edge[0] > edge[1]) edge = {surface_tris[i][n], surface_tris[i][j]};
+
+                bool has_edge = false;
+                for (size_t k = 0; k < edges.size(); ++k){
+                    if (edges[k][0] == edge[0] && edges[k][1] == edge[1]){
+                        has_edge = true;
+                        break;
+                    }
+                }
+                if (!has_edge) edges.push_back(edge);
+            }
+        }
+        
         return tet_obj;
     }
 
@@ -345,10 +366,15 @@ namespace mujoco::plugin::simplysoft
         {
             cuVec3 pos1 = GetBodyPoseForSdf(m, d, phyEngData_->softDef_->deformable_objects_[i].bound_body, phyEngData_->softDef_->deformable_objects_[i].bound_pos1);
             cuVec3 pos2 = GetBodyPoseForSdf(m, d, phyEngData_->softDef_->deformable_objects_[i].bound_body, phyEngData_->softDef_->deformable_objects_[i].bound_pos2);
-            UniX2MuJoCO(pos1);
-            UniX2MuJoCO(pos2);
             phyEngData_->human_sdf_[i]->a = pos1; // set position,
             phyEngData_->human_sdf_[i]->b = pos2; // set position,
+
+            cuVec3 pos_dir_act = phyEngData_->tet_obj_[i]->cur_pos[phyEngData_->softDef_->deformable_objects_[i].dir_point_id];
+            cuVec3 pos_dir = GetBodyPoseForSdf(m, d, phyEngData_->softDef_->deformable_objects_[i].bound_body, phyEngData_->softDef_->deformable_objects_[i].bound_dir_pos);
+
+            double ang = GetRotationAngle(pos1, pos2, pos_dir, pos_dir_act);
+            phyEngData_->tet_rotation_ang_[i] += ang;
+            phyEngData_->human_sdf_[i]->ang  = phyEngData_->tet_rotation_ang_[i];
         }
 
         // 更新robot sdf位置
@@ -356,8 +382,6 @@ namespace mujoco::plugin::simplysoft
         {
             cuVec3 pos1 = GetBodyPoseForSdf(m, d, phyEngData_->softDef_->obstracle_objects_[i].bound_body, phyEngData_->softDef_->obstracle_objects_[i].bound_pos1);
             cuVec3 pos2 = GetBodyPoseForSdf(m, d, phyEngData_->softDef_->obstracle_objects_[i].bound_body, phyEngData_->softDef_->obstracle_objects_[i].bound_pos2);
-            UniX2MuJoCO(pos1);
-            UniX2MuJoCO(pos2);
             phyEngData_->robot_sdf_[i]->a = pos1; // set position,
             phyEngData_->robot_sdf_[i]->b = pos2; // set position,
         }
@@ -384,8 +408,6 @@ namespace mujoco::plugin::simplysoft
                     double r = phyEngData_->robot_sdf_[k]->r;
                     if (ContactPoint2Sdf(pos, a, b, r))
                     {
-                        UniX2MuJoCO(pos);
-                        UniX2MuJoCO(f);
                         phyEngData_->contact_forces_[i][k].contact_forces.push_back(f * phyEngData_->softDef_->force_scale_);
                         phyEngData_->contact_forces_[i][k].contact_points.push_back(pos);
                     }
@@ -400,7 +422,7 @@ namespace mujoco::plugin::simplysoft
             }
         }
 
-        // 施加接触力到mujoco body上（TODO：有问题，时加的力似乎是不断叠加的）
+        // 施加接触力到mujoco body上（TODO：有问题，加的力似乎是不断叠加的）
         if (phyEngData_->softDef_->force_feedback_)
         {
             for (int i = 0; i < m->nv; ++i)
@@ -421,20 +443,36 @@ namespace mujoco::plugin::simplysoft
                     mjtNum force[3] = {f.x, f.y, f.z};
                     mjtNum torque[3] = {t.x, t.y, t.z};
                     mjtNum point[3] = {p.x, p.y, p.z};
-                    mj_applyFT(m, d, force, torque, point, rob_body_id, d->qfrc_applied);
+                    mj_applyFT(m, d, force, torque, point, hum_body_id, d->qfrc_applied);
 
                     mjtNum force2[3] = {-f.x, -f.y, -f.z};
                     mjtNum torque2[3] = {-t.x, -t.y, -t.z};
-                    mj_applyFT(m, d, force2, torque2, point, hum_body_id, d->qfrc_applied);
-
-                    // std::cout << "force: " << f << std::endl;
-                    // for (int nn = 0; nn < m->nv; nn++){
-                    //     std::cout << d->qfrc_applied[nn] << " ";
-                    // }
-                    // std::cout << std::endl;
+                    mj_applyFT(m, d, force2, torque2, point, rob_body_id, d->qfrc_applied);
                 }
             }
         }
+    }
+
+    double SimpleSoft::GetRotationAngle(const cuVec3& pos1, const cuVec3& pos2, const cuVec3& pos_dir1, const cuVec3& pos_dir2)
+    {
+        mjtNum vec12[3] = {pos2.x-pos1.x, pos2.y-pos1.y, pos2.z-pos1.z};
+        mjtNum vec1d1[3] = {pos_dir1.x-pos1.x, pos_dir1.y-pos1.y, pos_dir1.z-pos1.z};
+        mjtNum vec1d2[3] = {pos_dir2.x-pos1.x, pos_dir2.y-pos1.y, pos_dir2.z-pos1.z};
+        mjtNum n1[3];
+        mjtNum n2[3];
+        mju_cross(n1, vec12, vec1d1);
+        mju_cross(n2, vec12, vec1d2);
+        mju_normalize3(n1);
+        mju_normalize3(n2);
+        double ang = std::acos(mju_dot3(n1, n2));
+
+        mjtNum n_cross[3];
+        mju_cross(n_cross, n1, n2);
+        mjtNum d = mju_dot3(n_cross, vec12);
+        if (d>0){
+            ang = -ang;
+        }
+        return ang;
     }
 
     cuVec3 SimpleSoft::GetBodyPoseForSdf(const mjModel *m, const mjData *d, const std::string &body_name, const cuVec3 &pos_at_body)
@@ -570,63 +608,59 @@ namespace mujoco::plugin::simplysoft
             {
                 cuVec3 pos = phyEngData_->tet_obj_[i]->cur_pos[j];
                 pos = phyEngData_->tet_obj_[i]->GetGlobalPos(pos);
-                UniX2MuJoCO(pos);
                 phyEngData_->vertices_pos_[i][j][0] = pos.x;
                 phyEngData_->vertices_pos_[i][j][1] = pos.y;
                 phyEngData_->vertices_pos_[i][j][2] = pos.z;
             }
         }
 
-        scn->maxgeom = phyEngData_->softDef_->max_geom_; // TODO: 去掉重复的线，减少visual geom数量。
+        scn->maxgeom = phyEngData_->softDef_->max_geom_;
         // 画出mesh
         for (int i = 0; i < phyEngData_->softDef_->num_deformable_objects_; ++i)
         {
-            for (size_t j = 0; j < phyEngData_->surface_trangles_[i].size(); ++j)
+            for (size_t j = 0; j < phyEngData_->edges_[i].size(); ++j)
             {
                 if (scn->ngeom + 3 > scn->maxgeom)
                 {
                     mj_warning(d, mjWARN_VGEOMFULL, scn->maxgeom);
                     return;
                 }
-                const int v0 = phyEngData_->surface_trangles_[i][j][0];
-                const int v1 = phyEngData_->surface_trangles_[i][j][1];
-                const int v2 = phyEngData_->surface_trangles_[i][j][2];
-                const int edges[3][2] = {{v0, v1}, {v1, v2}, {v2, v0}};
-
-                for (int e = 0; e < 3; ++e)
-                {
-                    mjvGeom *geom = &scn->geoms[scn->ngeom++];
-                    mjv_initGeom(geom, mjGEOM_LINE, nullptr, nullptr, nullptr, nullptr);
-                    geom->category = mjCAT_DECOR;
-                    geom->objtype = mjOBJ_UNKNOWN;
-                    const mjtNum from[3] = {phyEngData_->vertices_pos_[i][edges[e][0]][0], phyEngData_->vertices_pos_[i][edges[e][0]][1], phyEngData_->vertices_pos_[i][edges[e][0]][2]};
-                    const mjtNum to[3] = {phyEngData_->vertices_pos_[i][edges[e][1]][0], phyEngData_->vertices_pos_[i][edges[e][1]][1], phyEngData_->vertices_pos_[i][edges[e][1]][2]};
-                    mjv_connector(geom, mjGEOM_LINE, 0.005, from, to);
-                }
+                const int v0 = phyEngData_->edges_[i][j][0];
+                const int v1 = phyEngData_->edges_[i][j][1];
+                mjvGeom* geom = &scn->geoms[scn->ngeom++];
+                mjv_initGeom(geom, mjGEOM_LINE, nullptr, nullptr, nullptr, nullptr);
+                geom->category     = mjCAT_DECOR;
+                geom->objtype      = mjOBJ_UNKNOWN;
+                const mjtNum from[3] = {phyEngData_->vertices_pos_[i][v0][0], phyEngData_->vertices_pos_[i][v0][1], phyEngData_->vertices_pos_[i][v0][2]};
+                const mjtNum to[3]   = {phyEngData_->vertices_pos_[i][v1][0], phyEngData_->vertices_pos_[i][v1][1], phyEngData_->vertices_pos_[i][v1][2]};
+                mjv_connector(geom, mjGEOM_LINE, 0.001, from, to);
             }
         }
 
-        // 接触力可视化（TODO: 去掉非必要节点的力，减少visual geom数量。）
+        // 接触力可视化
         if (phyEngData_->softDef_->show_contact_force_)
         {
-            for (int j = 0; j < phyEngData_->softDef_->num_deformable_objects_; ++j)
+            for (int i = 0; i < phyEngData_->softDef_->num_deformable_objects_; ++i)
             {
-                auto forces = phyEngData_->tet_obj_[j]->sampled_force;
-                for (size_t i = 0; i < forces.size(); i++)
+                for (int j = 0; j < phyEngData_->softDef_->num_obstracles_; ++j)
                 {
-                    mjvGeom *geom = &scn->geoms[scn->ngeom++];
-                    mjv_initGeom(geom, mjGEOM_LINE, nullptr, nullptr, nullptr, rgba_blue);
-                    geom->category = mjCAT_DECOR;
-                    geom->objtype = mjOBJ_UNKNOWN;
+                    auto forces = phyEngData_->contact_forces_[i][j].contact_forces;
+                    auto points = phyEngData_->contact_forces_[i][j].contact_points;
 
-                    auto pos = forces[i].pos;
-                    auto f = forces[i].f * phyEngData_->softDef_->force_scale_ * phyEngData_->softDef_->force_vis_scale_;
-                    UniX2MuJoCO(pos);
-                    UniX2MuJoCO(f);
+                    for (size_t k = 0; k < points.size(); ++k)
+                    {
+                        mjvGeom* geom = &scn->geoms[scn->ngeom++];
+                        mjv_initGeom(geom, mjGEOM_LINE, nullptr, nullptr, nullptr, rgba_blue);
+                        geom->category = mjCAT_DECOR;
+                        geom->objtype  = mjOBJ_UNKNOWN;
 
-                    const mjtNum from[3] = {pos.x, pos.y, pos.z};
-                    const mjtNum to[3] = {pos.x + f.x, pos.y + f.y, pos.z + f.z};
-                    mjv_connector(geom, mjGEOM_LINE, 2.0, from, to);
+                        auto pos = points[k];
+                        auto f = forces[k] * phyEngData_->softDef_->force_vis_scale_;
+
+                        const mjtNum from[3] = {pos.x, pos.y, pos.z};
+                        const mjtNum to[3]   = {pos.x - f.x, pos.y - f.y, pos.z - f.z};
+                        mjv_connector(geom, mjGEOM_LINE, 2.0, from, to);
+                    }
                 }
             }
         }
@@ -647,7 +681,7 @@ namespace mujoco::plugin::simplysoft
                         auto f = phyEngData_->contact_forces_[i][j].total_contact_force * phyEngData_->softDef_->force_vis_scale_;
 
                         const mjtNum from[3] = {pos.x, pos.y, pos.z};
-                        const mjtNum to[3] = {pos.x + f.x, pos.y + f.y, pos.z + f.z};
+                        const mjtNum to[3] = {pos.x - f.x, pos.y - f.y, pos.z - f.z};
                         mjv_connector(geom, mjGEOM_LINE, 5.0, from, to);
                     }
 
@@ -661,7 +695,7 @@ namespace mujoco::plugin::simplysoft
                         auto f = phyEngData_->contact_forces_[i][j].total_contact_torque * phyEngData_->softDef_->force_vis_scale_;
 
                         const mjtNum from[3] = {pos.x, pos.y, pos.z};
-                        const mjtNum to[3] = {pos.x + f.x, pos.y + f.y, pos.z + f.z};
+                        const mjtNum to[3] = {pos.x - f.x, pos.y - f.y, pos.z - f.z};
                         mjv_connector(geom, mjGEOM_LINE, 5.0, from, to);
                     }
                 }
@@ -674,8 +708,6 @@ namespace mujoco::plugin::simplysoft
         // mjvGeom for obstracle display
         cuVec3 pp1 = sdf->a;
         cuVec3 pp2 = sdf->b;
-        UniX2MuJoCO(pp1);
-        UniX2MuJoCO(pp2);
         mjtNum pos_1[3] = {pp1.x, pp1.y, pp1.z};
         mjtNum pos_2[3] = {pp2.x, pp2.y, pp2.z};
         mjvGeom *capsule = AddCapsuleToScene(pos_1, pos_2, radius, rgba, scn);

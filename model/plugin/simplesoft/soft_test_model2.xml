@@ -39,36 +39,26 @@
 
     <worldbody>
         <plugin plugin="mujoco.simplysoft">
-            <config key="config" value="/home/ljc/ljc/mujoco-soft/simplesoft_mujoco/model/plugin/simplesoft/config_test_model.json" />
+            <config key="config" value="/home/ljc/ljc/mujoco-soft/simplesoft_mujoco/model/plugin/simplesoft/config_test_model2.json" />
         </plugin>
 
         <light directional="true" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1" pos="0 0 5.0" dir="0 0 -1" castshadow="false" />
         <light directional="true" diffuse="0.6 0.6 0.6" specular="0.2 0.2 0.2" pos="0 0 4" dir="0 0 -1" />
         <geom name="ground" type="plane" pos="0 0 0" size="100 100 0.001" quat="1 0 0 0" material="grid" condim="3" contype="1" conaffinity="15" />
         
-        <body name="limb1" pos="0 0 0.49" quat="1 0 0 0">
-            <geom name="limb1_capsule" type="capsule"  size="0.006 0.21" quat="0.7071 0.7071 0 0"/>
+        <body name="limb1" pos="0 0 0.2" quat="1 0 0 0">
+            <geom name="limb1_capsule" type="capsule"  size="0.006 0.21" pos="0 0 0" quat="0.7071 0.7071 0 0"/>
         </body>
 
-        <body name="rob_link1" pos="0.4 0.1 0.1" quat="1 0 0 0">
+        <body name="limb2" pos="0.2 0 0.2" quat="1 0 0 0">
+            <geom name="limb2_capsule" type="capsule"  size="0.006 0.21" pos="0 0 0" quat="0.7071 0.7071 0 0"/>
+        </body>
+
+        <body name="rob_link1" pos="-0.1 0.1 0.3" quat="0.7071 0 0.7071 0">
             <geom name="rob_link1_capsule" type="capsule" size="0.03 0.2" pos="0 0 0.2"/>
-            <joint name="J1" type="hinge" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708"/>
-            <body name="rob_link2" pos="0 0 0.4" quat="1 0 0 0">
-                <geom name="rob_link2_capsule" type="capsule" size="0.03 0.2" pos="0 0 0.2"/>
-                <joint name="J2" type="hinge" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708"/>
-                <body name="rob_link3" pos="0 0 0.4" quat="1 0 0 0">
-                    <geom name="rob_link3_capsule" type="capsule" size="0.03 0.1" pos="0 0 0.1"/>
-                    <joint name="J3" type="hinge" pos="0 0 0" axis="0 1 0" range="-1.5708 1.5708"/>
-                </body>
-            </body>
+            <freejoint/>
         </body>
 
     </worldbody>
-
-    <actuator>
-        <position name="J1" joint="J1" ctrllimited="true" ctrlrange="-1.2 0.1" forcelimited="true" forcerange="-1000 1000" kp="1000" kv="20"/>
-        <position name="J2" joint="J2" ctrllimited="true" ctrlrange="-0.5 0.1" forcelimited="true" forcerange="-1000 1000" kp="100" kv="5"/>
-        <position name="J3" joint="J3" ctrllimited="true" ctrlrange="-1.2 0.1" forcelimited="true" forcerange="-100 100" kp="10" kv="0.2"/>
-    </actuator>
 
 </mujoco>

@@ -1,0 +1,47 @@
+{
+  "model_path": "/usr/share/biulab/files",
+  "barrier_valid": false,
+  "show_contact_force": true,
+  "show_total_contact_force": true,
+  "show_sdf_label": false,
+  "force_feedback": true,
+  "sim_step": 1,
+  "force_scale": 10.0,
+  "force_vis_scale": 1.0,
+  "maxgeom": 50000,
+  "deformable_objects": [
+    {
+      "name": "test_model",
+      "radius": 0.001,
+      "fix_point1": [3.81391379e-03,  1.24461831e-05, -5.37106674e-03],
+      "fix_point2": [-0.00973396,  0.19795443,  0.0012198],
+      "dir_point": [0.00959925, 0.19696091, -0.00238706],
+      "dir_point_id": 1369,
+      "bound_body": "limb1",
+      "bound_pos1": [3.81391379e-03,  1.24461831e-05, -5.37106674e-03],
+      "bound_pos2": [-0.00973396,  0.19795443,  0.0012198],
+      "bound_dir_pos": [0.00959925, 0.19696091, -0.00238706]
+    },
+    {
+      "name": "test_model",
+      "radius": 0.001,
+      "fix_point1": [3.81391379e-03,  1.24461831e-05, -5.37106674e-03],
+      "fix_point2": [-0.00973396,  0.19795443,  0.0012198],
+      "dir_point": [0.00959925, 0.19696091, -0.00238706],
+      "dir_point_id": 1369,
+      "bound_body": "limb2",
+      "bound_pos1": [3.81391379e-03,  1.24461831e-05, -5.37106674e-03],
+      "bound_pos2": [-0.00973396,  0.19795443,  0.0012198],
+      "bound_dir_pos": [0.00959925, 0.19696091, -0.00238706]
+    }
+  ],
+  "obstracles": [
+    {
+      "name": "arm1",
+      "radius": 0.035,
+      "bound_body": "rob_link1",
+      "bound_pos1": [0.0, 0.0, 0.0],
+      "bound_pos2": [0.0, 0.0, 0.4]
+    }
+  ]
+}
