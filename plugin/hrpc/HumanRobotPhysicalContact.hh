@@ -5,14 +5,14 @@
 #include <mujoco/mjvisualize.h>
 #include "PhyscisEngineData.hh"
 
-namespace mujoco::plugin::simplysoft
+namespace mujoco::plugin::hrpc
 {
 
-  class SimpleSoft
+  class HumanRobotPhysicalContact
   {
   public:
-    SimpleSoft(const mjModel *m, int instance);
-    ~SimpleSoft() = default;
+    HumanRobotPhysicalContact(const mjModel *m, int instance);
+    ~HumanRobotPhysicalContact() = default;
 
     static void RegisterPlugin();
 
@@ -26,27 +26,12 @@ namespace mujoco::plugin::simplysoft
     void DrawCapsule(const mjModel *m, mjvScene *scn, mjtNum radius, int lable_id, std::shared_ptr<SDFCapsule> sdf, float *rgba);
     bool ContactPoint2Sdf(const cuVec3 &p, const cuVec3 &a, const cuVec3 &b, double r);
 
-    void InitSim()
-    {
-      // std::cout << "Init.." << std::endl;
-    }
-
-    void StartSim()
-    {
-      // std::cout << "  StartSim" << std::endl;
-    }
-
-    void StepSim()
-    {
-      // std::cout << "  step.." << std::endl;
-    }
-
-    void SubStepSim()
-    {
-      // std::cout << "    substep.." << std::endl;
-    }
+    void InitSim();
+    void StartSim();
+    void StepSim();
+    void SubStepSim();
 
     static PhyscisEngineData *phyEngData_;
   };
 
-} // namespace mujoco::plugin::simplysoft
+} // namespace mujoco::plugin::hrpc

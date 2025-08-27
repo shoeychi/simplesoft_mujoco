@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Soft.hh"
+#include "HumanRobotPhysicalContact.hh"
 #include <mujoco/mjplugin.h>
 
-namespace mujoco::plugin::simplysoft {
+namespace mujoco::plugin::hrpc {
 
 mjPLUGIN_LIB_INIT {
-    SimpleSoft::RegisterPlugin();
+    HumanRobotPhysicalContact::RegisterPlugin();
 }
 
-} // namespace mujoco::plugin::simplysoft
+} // namespace mujoco::plugin::hrpc

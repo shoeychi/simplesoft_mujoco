@@ -2,7 +2,7 @@
 #include <cuPhy/Phy3DHelper.hh>
 #include <mujoco/mujoco.h>
 
-namespace mujoco::plugin::simplysoft
+namespace mujoco::plugin::hrpc
 {
 
     void ContactForces::clear()

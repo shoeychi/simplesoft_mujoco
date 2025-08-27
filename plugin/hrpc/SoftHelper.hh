@@ -5,7 +5,7 @@
 #include <mujoco/mjdata.h>
 #include <mujoco/mjvisualize.h>
 
-namespace mujoco::plugin::simplysoft
+namespace mujoco::plugin::hrpc
 {
     mjvGeom *AddSphereToScene(const mjtNum pos[3], mjtNum radius, const float rgba[4], mjvScene *scn);
 

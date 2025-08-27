@@ -4,7 +4,7 @@
 #include <mujoco/mjtnum.h>
 #include "SoftDef.hh"
 
-namespace mujoco::plugin::simplysoft
+namespace mujoco::plugin::hrpc
 {
     struct ContactForces
     {

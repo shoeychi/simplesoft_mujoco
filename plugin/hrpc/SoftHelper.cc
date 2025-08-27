@@ -1,11 +1,3 @@
-/*================================================================
-*  Copyright (C)2025 All rights reserved.
-*  FileName : SoftHelper.cc
-*  Author   : dlkou
-*  Email    : elonkou@ktime.cc
-*  Date     : Fri 02 May 2025 07:45:39 AM CST
-================================================================*/
-
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -18,7 +10,8 @@
 #include <mujoco/mjplugin.h>
 #include <mujoco/mjtnum.h>
 #include <mujoco/mujoco.h>
-namespace mujoco::plugin::simplysoft
+
+namespace mujoco::plugin::hrpc
 {
     mjvGeom *AddSphereToScene(const mjtNum pos[3], mjtNum radius, const float rgba[4], mjvScene *scn)
     {

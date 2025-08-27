@@ -4,7 +4,7 @@
 #include <vector>
 #include <cuPhy/MathCommon.hh>
 
-namespace mujoco::plugin::simplysoft
+namespace mujoco::plugin::hrpc
 {
     struct SoftDef
     {

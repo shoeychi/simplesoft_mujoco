@@ -77,7 +77,7 @@ endif()
 #   PRIVATE src
 # )
 
-add_subdirectory(plugin/simplesoft)
+add_subdirectory(plugin/hrpc)
 #add_subdirectory(plugin/elasticity)
 #add_subdirectory(plugin/actuator)
 #add_subdirectory(plugin/sensor)

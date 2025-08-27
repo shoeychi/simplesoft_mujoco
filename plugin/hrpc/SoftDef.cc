@@ -2,7 +2,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
-namespace mujoco::plugin::simplysoft
+namespace mujoco::plugin::hrpc
 {
     void SoftDef::LoadConfig(const std::string &config_path)
     {

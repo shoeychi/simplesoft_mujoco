@@ -1,4 +1,4 @@
-<mujoco model="SimpleSoft">
+<mujoco model="HumanRobotPhysicalContact">
     
     <!-- 编译器选项 -->
     <compiler meshdir="asset" texturedir="asset" autolimits="true" angle="radian" />
@@ -32,13 +32,13 @@
 
 
     <extension>
-        <plugin plugin="mujoco.simplysoft" />
+        <plugin plugin="mujoco.HumanRobotPhysicalContact" />
     </extension>
 
     <size memory="10M" />
 
     <worldbody>
-        <plugin plugin="mujoco.simplysoft">
+        <plugin plugin="mujoco.HumanRobotPhysicalContact">
             <config key="config" value="model/plugin/simplesoft/config_test_model.json" />
         </plugin>
 

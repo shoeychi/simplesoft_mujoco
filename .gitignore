@@ -5,7 +5,7 @@ model/*
 !model/plugin
 !model/CMakeLists.txt
 plugin/*
-!plugin/simplesoft
+!plugin/hrpc
 MUJOCO_LOG.TXT
 .vscode/
-bin/mujoco_plugin/libsimplesoft.so
+bin/mujoco_plugin/libHumanRobotPhysicalContact.so

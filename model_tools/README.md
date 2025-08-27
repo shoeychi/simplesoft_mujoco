@@ -53,7 +53,7 @@
     ```
     具体会实现将：
     * 将模型复制到/usr/share/biulab/files/
-    * 将配置文件复制到/usr/share/biulab/config/
+    * 将配置文件(yaml)复制到/usr/share/biulab/config/
     * 将json文件复制到/usr/share/biulab/resources/models/
 
 7. 运行以下命令，在UI界面load config查看模型是否有其他问题

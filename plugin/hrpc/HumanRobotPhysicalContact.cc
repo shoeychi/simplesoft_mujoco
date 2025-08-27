@@ -1,11 +1,3 @@
-/*================================================================
-*  Copyright (C)2024 All rights reserved.
-*  FileName : Soft.cc
-*  Author   : dlkou
-*  Email    : elonkou@ktime.cc
-*  Date     : Wed 23 Oct 2024 08:10:35 PM CST
-================================================================*/
-
 #include <algorithm>
 #include <cstddef>
 #include <optional>
@@ -14,17 +6,17 @@
 #include <mujoco/mjplugin.h>
 #include <mujoco/mujoco.h>
 
-#include "Soft.hh"
+#include "HumanRobotPhysicalContact.hh"
 #include "SoftHelper.hh"
 
-namespace mujoco::plugin::simplysoft
+namespace mujoco::plugin::hrpc
 {
-    void SimpleSoft::RegisterPlugin()
+    void HumanRobotPhysicalContact::RegisterPlugin()
     {
         mjpPlugin plugin;
         mjp_defaultPlugin(&plugin);
 
-        plugin.name = "mujoco.simplysoft";
+        plugin.name = "mujoco.HumanRobotPhysicalContact";
         plugin.capabilityflags |= mjPLUGIN_PASSIVE;
 
         // 增加模型相关配置参数
@@ -37,41 +29,41 @@ namespace mujoco::plugin::simplysoft
         plugin.init = +[](const mjModel *m, mjData *d, int instance)
         {
             // 无法避免初始化两次，第一次是检查
-            d->plugin_data[instance] = reinterpret_cast<uintptr_t>(new SimpleSoft(m, instance));
+            d->plugin_data[instance] = reinterpret_cast<uintptr_t>(new HumanRobotPhysicalContact(m, instance));
             return 0;
         };
 
         // 注册状态更新回调
         plugin.reset = +[](const mjModel *m, mjtNum *plugin_state, void *plugin_data, int instance)
         {
-            auto *soft = reinterpret_cast<SimpleSoft *>(plugin_data);
+            auto *soft = reinterpret_cast<HumanRobotPhysicalContact *>(plugin_data);
             soft->Reset(m, instance);
         };
 
         plugin.destroy = +[](mjData *d, int instance)
         {
-            delete reinterpret_cast<SimpleSoft *>(d->plugin_data[instance]);
+            delete reinterpret_cast<HumanRobotPhysicalContact *>(d->plugin_data[instance]);
             d->plugin_data[instance] = 0;
         };
 
         plugin.compute = +[](const mjModel *m, mjData *d, int instance, int capability_bit)
         {
-            auto *elasticity = reinterpret_cast<SimpleSoft *>(d->plugin_data[instance]);
+            auto *elasticity = reinterpret_cast<HumanRobotPhysicalContact *>(d->plugin_data[instance]);
             elasticity->Compute(m, d, instance);
         };
 
         plugin.visualize = +[](const mjModel *m, mjData *d, const mjvOption *opt, mjvScene *scn,
                                int instance)
         {
-            auto *elasticity = reinterpret_cast<SimpleSoft *>(d->plugin_data[instance]);
+            auto *elasticity = reinterpret_cast<HumanRobotPhysicalContact *>(d->plugin_data[instance]);
             elasticity->Visualize(m, d, scn, instance);
         };
 
         mjp_registerPlugin(&plugin);
     }
 
-    PhyscisEngineData *SimpleSoft::phyEngData_ = nullptr;
-    SimpleSoft::SimpleSoft(const mjModel *m, int instance)
+    PhyscisEngineData *HumanRobotPhysicalContact::phyEngData_ = nullptr;
+    HumanRobotPhysicalContact::HumanRobotPhysicalContact(const mjModel *m, int instance)
     {
         // 读取配置文件
         if (phyEngData_ == nullptr)
@@ -80,16 +72,16 @@ namespace mujoco::plugin::simplysoft
             std::string config_file = mj_getPluginConfig(m, instance, "config");
             softDef_->LoadConfig(config_file);
             phyEngData_ = new PhyscisEngineData(softDef_);
-            phyEngData_->m_phy_->registerInitCallback(this, &SimpleSoft::InitSim);
-            phyEngData_->m_phy_->registerStartSimulateCallback(this, &SimpleSoft::StartSim);
-            phyEngData_->m_phy_->registerStepCallback(this, &SimpleSoft::StepSim);
-            phyEngData_->m_phy_->registerSubStepCallback(this, &SimpleSoft::SubStepSim);
+            phyEngData_->m_phy_->registerInitCallback(this, &HumanRobotPhysicalContact::InitSim);
+            phyEngData_->m_phy_->registerStartSimulateCallback(this, &HumanRobotPhysicalContact::StartSim);
+            phyEngData_->m_phy_->registerStepCallback(this, &HumanRobotPhysicalContact::StepSim);
+            phyEngData_->m_phy_->registerSubStepCallback(this, &HumanRobotPhysicalContact::SubStepSim);
         }
     }
 
-    void SimpleSoft::Reset(const mjModel *m, int instance) {}
+    void HumanRobotPhysicalContact::Reset(const mjModel *m, int instance) {}
 
-    void SimpleSoft::Compute(const mjModel *m, mjData *d, int instance)
+    void HumanRobotPhysicalContact::Compute(const mjModel *m, mjData *d, int instance)
     {
         static int compute_counter = -1;
         compute_counter++;
@@ -202,7 +194,7 @@ namespace mujoco::plugin::simplysoft
         }
     }
 
-    double SimpleSoft::GetRotationAngle(const cuVec3 &pos1, const cuVec3 &pos2, const cuVec3 &pos_dir1, const cuVec3 &pos_dir2)
+    double HumanRobotPhysicalContact::GetRotationAngle(const cuVec3 &pos1, const cuVec3 &pos2, const cuVec3 &pos_dir1, const cuVec3 &pos_dir2)
     {
         mjtNum vec12[3] = {pos2.x - pos1.x, pos2.y - pos1.y, pos2.z - pos1.z};
         mjtNum vec1d1[3] = {pos_dir1.x - pos1.x, pos_dir1.y - pos1.y, pos_dir1.z - pos1.z};
@@ -225,7 +217,7 @@ namespace mujoco::plugin::simplysoft
         return ang;
     }
 
-    cuVec3 SimpleSoft::GetBodyPoseForSdf(const mjModel *m, const mjData *d, const std::string &body_name, const cuVec3 &pos_at_body)
+    cuVec3 HumanRobotPhysicalContact::GetBodyPoseForSdf(const mjModel *m, const mjData *d, const std::string &body_name, const cuVec3 &pos_at_body)
     {
         int body_id = mj_name2id(m, mjOBJ_BODY, body_name.c_str());
         mjtNum *body_pos = d->xpos + 3 * body_id;
@@ -239,7 +231,7 @@ namespace mujoco::plugin::simplysoft
         return p;
     }
 
-    bool SimpleSoft::ContactPoint2Sdf(const cuVec3 &p, const cuVec3 &a, const cuVec3 &b, double r)
+    bool HumanRobotPhysicalContact::ContactPoint2Sdf(const cuVec3 &p, const cuVec3 &a, const cuVec3 &b, double r)
     {
         // 求投影点 c, 首先有
         double t1 = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y) + (p.z - a.z) * (b.z - a.z);
@@ -270,7 +262,7 @@ namespace mujoco::plugin::simplysoft
         return true;
     }
 
-    void SimpleSoft::Visualize(const mjModel *m, mjData *d, mjvScene *scn, int instance)
+    void HumanRobotPhysicalContact::Visualize(const mjModel *m, mjData *d, mjvScene *scn, int instance)
     {
         float rgba_blue[4] = {0.3f, 0.6f, 1.0f, 1.0f}; // blue
         float rgba_red[4] = {1.0f, 0.3f, 0.2f, 1.0f};  // red
@@ -389,7 +381,7 @@ namespace mujoco::plugin::simplysoft
         }
     }
 
-    void SimpleSoft::DrawCapsule(const mjModel *m, mjvScene *scn, mjtNum radius, int lable_id, std::shared_ptr<SDFCapsule> sdf, float *rgba)
+    void HumanRobotPhysicalContact::DrawCapsule(const mjModel *m, mjvScene *scn, mjtNum radius, int lable_id, std::shared_ptr<SDFCapsule> sdf, float *rgba)
     {
         // mjvGeom for obstracle display
         cuVec3 pp1 = sdf->a;
@@ -401,6 +393,26 @@ namespace mujoco::plugin::simplysoft
         {
             makeLabelX(m, mjOBJ_GEOM, lable_id, capsule->label);
         }
+    }
+
+    void HumanRobotPhysicalContact::InitSim()
+    {
+        // std::cout << "Init.." << std::endl;
+    }
+
+    void HumanRobotPhysicalContact::StartSim()
+    {
+        // std::cout << "  StartSim" << std::endl;
+    }
+
+    void HumanRobotPhysicalContact::StepSim()
+    {
+        // std::cout << "  step.." << std::endl;
+    }
+
+    void HumanRobotPhysicalContact::SubStepSim()
+    {
+        // std::cout << "    substep.." << std::endl;
     }
 
 } // namespace mujoco::plugin::simplysoft
