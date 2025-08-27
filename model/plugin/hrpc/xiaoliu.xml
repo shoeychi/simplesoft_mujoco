@@ -1,7 +1,7 @@
 <mujoco model="the_six">
   <option iterations="50" timestep="0.001" solver="PGS" gravity="0 0 -9.81" />
 
-  <compiler angle="radian" meshdir="../../../" eulerseq="zyx" autolimits="true" />
+  <compiler angle="radian" meshdir="./" eulerseq="zyx" autolimits="true" />
 
   <default>
     <joint limited="true" actuatorfrclimited="true" damping="0" frictionloss="0" />
@@ -20,37 +20,37 @@
       type="2d" width="512" />
     <material name="floorplane" reflectance="0.3" texrepeat="1 1" texture="texplane"
       texuniform="true" />
-    <mesh name="LINK_BASE" file="./xiaoliu/meshes/LINK_BASE.STL" />
-    <mesh name="LINK_WAIST_M0" file="./xiaoliu/meshes/LINK_WAIST_M0.STL" />
-    <mesh name="LINK_NECK_M0" file="./xiaoliu/meshes/LINK_NECK_M0.STL" />
-    <mesh name="LINK_NECK_M1" file="./xiaoliu/meshes/LINK_NECK_M1.STL" />
-    <mesh name="LINK_BASE_L" file="./xiaoliu/meshes/LINK_BASE_L.STL" />
-    <mesh name="LINK_SHOULDER_L0" file="./xiaoliu/meshes/LINK_SHOULDER_L0.STL" />
-    <mesh name="LINK_SHOULDER_L1" file="./xiaoliu/meshes/LINK_SHOULDER_L1.STL" />
-    <mesh name="LINK_SHOULDER_L2" file="./xiaoliu/meshes/LINK_SHOULDER_L2.STL" />
-    <mesh name="LINK_ELBOW_L0" file="./xiaoliu/meshes/LINK_ELBOW_L0.STL" />
-    <mesh name="LINK_ELBOW_L1" file="./xiaoliu/meshes/LINK_ELBOW_L1.STL" />
-    <mesh name="LINK_WRIST_L0" file="./xiaoliu/meshes/LINK_WRIST_L0.STL" />
-    <mesh name="LINK_WRIST_L1" file="./xiaoliu/meshes/LINK_WRIST_L1.STL" />
-    <mesh name="LINK_BASE_R" file="./xiaoliu/meshes/LINK_BASE_R.STL" />
-    <mesh name="LINK_SHOULDER_R0" file="./xiaoliu/meshes/LINK_SHOULDER_R0.STL" />
-    <mesh name="LINK_SHOULDER_R1" file="./xiaoliu/meshes/LINK_SHOULDER_R1.STL" />
-    <mesh name="LINK_SHOULDER_R2" file="./xiaoliu/meshes/LINK_SHOULDER_R2.STL" />
-    <mesh name="LINK_ELBOW_R0" file="./xiaoliu/meshes/LINK_ELBOW_R0.STL" />
-    <mesh name="LINK_ELBOW_R1" file="./xiaoliu/meshes/LINK_ELBOW_R1.STL" />
-    <mesh name="LINK_WRIST_R0" file="./xiaoliu/meshes/LINK_WRIST_R0.STL" />
-    <mesh name="LINK_WRIST_R1" file="./xiaoliu/meshes/LINK_WRIST_R1.STL" />
-    <mesh name="LINK_HAND_BASE_L" file="./xiaoliu/meshes/LINK_HAND_BASE_L.STL" />
-    <mesh name="LINK_F0_L0" file="./xiaoliu/meshes/LINK_F0_L0.STL" />
-    <mesh name="LINK_F0_L1" file="./xiaoliu/meshes/LINK_F0_L1.STL" />
-    <mesh name="LINK_F0_L2" file="./xiaoliu/meshes/LINK_F0_L2.STL" />
-    <mesh name="LINK_F1_L0" file="./xiaoliu/meshes/LINK_F1_L0.STL" />
-    <mesh name="LINK_F1_L1" file="./xiaoliu/meshes/LINK_F1_L1.STL" />
-    <mesh name="LINK_F1_L2" file="./xiaoliu/meshes/LINK_F1_L2.STL" />
-    <mesh name="LINK_F2_L0" file="./xiaoliu/meshes/LINK_F2_L0.STL" />
-    <mesh name="LINK_F2_L1" file="./xiaoliu/meshes/LINK_F2_L1.STL" />
-    <mesh name="LINK_F2_L2" file="./xiaoliu/meshes/LINK_F2_L2.STL" />
-    <mesh name="LINK_HAND_BASE_R" file="./xiaoliu/meshes/LINK_HAND_BASE_R.STL" />
+    <mesh name="LINK_BASE" file="xiaoliu/meshes/LINK_BASE.STL" />
+    <mesh name="LINK_WAIST_M0" file="xiaoliu/meshes/LINK_WAIST_M0.STL" />
+    <mesh name="LINK_NECK_M0" file="xiaoliu/meshes/LINK_NECK_M0.STL" />
+    <mesh name="LINK_NECK_M1" file="xiaoliu/meshes/LINK_NECK_M1.STL" />
+    <mesh name="LINK_BASE_L" file="xiaoliu/meshes/LINK_BASE_L.STL" />
+    <mesh name="LINK_SHOULDER_L0" file="xiaoliu/meshes/LINK_SHOULDER_L0.STL" />
+    <mesh name="LINK_SHOULDER_L1" file="xiaoliu/meshes/LINK_SHOULDER_L1.STL" />
+    <mesh name="LINK_SHOULDER_L2" file="xiaoliu/meshes/LINK_SHOULDER_L2.STL" />
+    <mesh name="LINK_ELBOW_L0" file="xiaoliu/meshes/LINK_ELBOW_L0.STL" />
+    <mesh name="LINK_ELBOW_L1" file="xiaoliu/meshes/LINK_ELBOW_L1.STL" />
+    <mesh name="LINK_WRIST_L0" file="xiaoliu/meshes/LINK_WRIST_L0.STL" />
+    <mesh name="LINK_WRIST_L1" file="xiaoliu/meshes/LINK_WRIST_L1.STL" />
+    <mesh name="LINK_BASE_R" file="xiaoliu/meshes/LINK_BASE_R.STL" />
+    <mesh name="LINK_SHOULDER_R0" file="xiaoliu/meshes/LINK_SHOULDER_R0.STL" />
+    <mesh name="LINK_SHOULDER_R1" file="xiaoliu/meshes/LINK_SHOULDER_R1.STL" />
+    <mesh name="LINK_SHOULDER_R2" file="xiaoliu/meshes/LINK_SHOULDER_R2.STL" />
+    <mesh name="LINK_ELBOW_R0" file="xiaoliu/meshes/LINK_ELBOW_R0.STL" />
+    <mesh name="LINK_ELBOW_R1" file="xiaoliu/meshes/LINK_ELBOW_R1.STL" />
+    <mesh name="LINK_WRIST_R0" file="xiaoliu/meshes/LINK_WRIST_R0.STL" />
+    <mesh name="LINK_WRIST_R1" file="xiaoliu/meshes/LINK_WRIST_R1.STL" />
+    <mesh name="LINK_HAND_BASE_L" file="xiaoliu/meshes/LINK_HAND_BASE_L.STL" />
+    <mesh name="LINK_F0_L0" file="xiaoliu/meshes/LINK_F0_L0.STL" />
+    <mesh name="LINK_F0_L1" file="xiaoliu/meshes/LINK_F0_L1.STL" />
+    <mesh name="LINK_F0_L2" file="xiaoliu/meshes/LINK_F0_L2.STL" />
+    <mesh name="LINK_F1_L0" file="xiaoliu/meshes/LINK_F1_L0.STL" />
+    <mesh name="LINK_F1_L1" file="xiaoliu/meshes/LINK_F1_L1.STL" />
+    <mesh name="LINK_F1_L2" file="xiaoliu/meshes/LINK_F1_L2.STL" />
+    <mesh name="LINK_F2_L0" file="xiaoliu/meshes/LINK_F2_L0.STL" />
+    <mesh name="LINK_F2_L1" file="xiaoliu/meshes/LINK_F2_L1.STL" />
+    <mesh name="LINK_F2_L2" file="xiaoliu/meshes/LINK_F2_L2.STL" />
+    <mesh name="LINK_HAND_BASE_R" file="xiaoliu/meshes/LINK_HAND_BASE_R.STL" />
     <material name="link_geom" rgba="0.5 0.9 0.2 1" />
     <!-- <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32"
     height="512"/> -->
@@ -66,8 +66,8 @@
     -1" /> -->
     <!-- <geom name="ground" type="plane" pos="0 0 0" size="100 100 0.001" quat="1 0 0 0"
     material="grid" contype="1" conaffinity="0"/> -->
-    <camera name="fixed" pos="0 -3.0 0.7324946948063407" xyaxes="1 0 0 0 0 1" />
-    <camera name="track" mode="trackcom" pos="0 -3.0 0.7324946948063407" xyaxes="1 0 0 0 0 1" />
+    <!-- <camera name="fixed" pos="0 -3.0 0.7324946948063407" xyaxes="1 0 0 0 0 1" /> -->
+    <!-- <camera name="track" mode="trackcom" pos="0 -3.0 0.7324946948063407" xyaxes="1 0 0 0 0 1" /> -->
     <body name="BASE_X">
       <inertial pos="0 0 0" mass="0.01" diaginertia="1e-06 1e-06 1e-06" />
       <joint name="J_BASE_X" pos="0 0 0" axis="1 0 0" type="slide" range="-10 10"

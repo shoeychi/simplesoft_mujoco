@@ -1,0 +1,323 @@
+<mujoco model="human_skeleton">
+  <option iterations="50" timestep="0.001" solver="PGS" gravity="0 0 -9.81" />
+
+  <compiler angle="radian" meshdir="./" eulerseq="zyx" autolimits="true" />
+
+  <default>
+    <joint limited="true" damping="0.01" armature="0.01" frictionloss="0.01" />
+    <geom condim="4" contype="1" conaffinity="15" friction="0.9 0.2 0.2" solref="0.001 2" />
+    <motor ctrllimited="true" forcelimited="true" />
+    <position ctrllimited="true" forcelimited="true" />
+    <default class="human_link">
+      <geom material="human_link" condim="3" contype="2" conaffinity="0" />
+    </default>
+  </default>
+
+  <asset>
+    <mesh name="pelvis" content_type="model/stl" file="human_skel/meshes/pelvis.stl" />
+    <mesh name="torso" content_type="model/stl" file="human_skel/meshes/torso.stl" />
+    <mesh name="upper_arm_L" content_type="model/stl" file="human_skel/meshes/upper_arm_L.stl" />
+    <mesh name="forearm_L" content_type="model/stl" file="human_skel/meshes/forearm_L.stl" />
+    <mesh name="hand_L" content_type="model/stl" file="human_skel/meshes/hand_L.stl" />
+    <mesh name="upper_arm_R" content_type="model/stl" file="human_skel/meshes/upper_arm_R.stl" />
+    <mesh name="forearm_R" content_type="model/stl" file="human_skel/meshes/forearm_R.stl" />
+    <mesh name="hand_R" content_type="model/stl" file="human_skel/meshes/hand_R.stl" />
+    <mesh name="thigh_L" content_type="model/stl" file="human_skel/meshes/thigh_L.stl" />
+    <mesh name="shank_L" content_type="model/stl" file="human_skel/meshes/shank_L.stl" />
+    <mesh name="foot_L" content_type="model/stl" file="human_skel/meshes/foot_L.stl" />
+    <mesh name="thigh_R" content_type="model/stl" file="human_skel/meshes/thigh_R.stl" />
+    <mesh name="shank_R" content_type="model/stl" file="human_skel/meshes/shank_R.stl" />
+    <mesh name="foot_R" content_type="model/stl" file="human_skel/meshes/foot_R.stl" />
+    <material name="human_link" rgba="0.5 0.9 0.2 1" />
+    <texture type="skybox" builtin="gradient" rgb1="0.52734375 0.8046875 0.91796875" rgb2="0 0 0"
+      width="512" height="3072" />
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3"
+      rgb2=".2 .3 .4" />
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2" />
+  </asset>
+
+  <worldbody>
+    <light directional="true" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1" pos="0 0 5.0"
+      dir="0 0 -1" castshadow="false" />
+    <light directional="true" diffuse="0.6 0.6 0.6" specular="0.2 0.2 0.2" pos="0 0 4" dir="0 0 -1" />
+    <geom name="ground" type="plane" pos="0 0 0" size="100 100 0.001" quat="1 0 0 0" material="grid"
+      condim="3" conaffinity="15" />
+    <camera name="fixed" pos="0 -3.0 1.6444066293796307" xyaxes="1 0 0 0 0 1" />
+    <camera name="track" mode="trackcom" pos="0 -3.0 1.6444066293796307" xyaxes="1 0 0 0 0 1" />
+    <body name="human_skeleton" pos="1.7 0 1.11" quat="0.5 0.5 0.5 0.5">
+      <!-- <freejoint name="root" /> -->
+      <site name="imu" size="0.01" pos="0 0 0" />
+      <geom pos="0 0.105 -0.01" quat="1 0 0 0" type="mesh" rgba="0.752941 0.752941 0.752941 1"
+        mesh="pelvis" class="human_link" />
+      <body name="link_torso">
+        <inertial pos="0 0.24 -0.01" mass="27.3" diaginertia="0.4135 0.4135 0.4135" />
+        <joint name="human_waist" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+          actuatorfrcrange="-500 500" />
+        <geom pos="0 0.105 -0.01" quat="1 0 0 0" type="mesh" rgba="0.752941 0.752941 0.752941 1"
+          mesh="torso" class="human_link" />
+        <body name="link_shoulder_L1" pos="0.17 0.34 -0.01">
+          <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+          <joint name="human_shoulder_L1" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+            actuatorfrcrange="-500 500" />
+          <body name="link_shoulder_L2">
+            <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+            <joint name="human_shoulder_L2" pos="0 0 0" axis="0 0 1" range="-3.1416 3.1416"
+              actuatorfrcrange="-500 500" />
+            <body name="link_upper_arm_L">
+              <inertial pos="0.13 0 0" mass="1.701" diaginertia="0.004 0.004 0.004" />
+              <joint name="human_shoulder_L3" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+                actuatorfrcrange="-500 500" />
+              <geom pos="-0.17 -0.235 0" quat="1 0 0 0" type="mesh"
+                rgba="0.752941 0.752941 0.752941 1" mesh="upper_arm_L" class="human_link" />
+              <body name="link_elbow_L1" pos="0.27 -0.015 -0.05">
+                <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+                <joint name="human_elbow_L1" pos="0 0 0" axis="0 1 0" range="-3.1416 3.1416"
+                  actuatorfrcrange="-500 500" />
+                <body name="link_forearm_L">
+                  <inertial pos="0.12 0 0" mass="0.875" diaginertia="0.0013 0.0013 0.0013" />
+                  <joint name="human_elbow_L2" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+                    actuatorfrcrange="-500 500" />
+                  <geom pos="-0.44 -0.22 0.05" quat="1 0 0 0" type="mesh"
+                    rgba="0.752941 0.752941 0.752941 1" mesh="forearm_L" class="human_link" />
+                  <body name="link_wrist_L1" pos="0.25 0.01 0">
+                    <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+                    <joint name="human_wrist_L1" pos="0 0 0" axis="0 1 0" range="-3.1416 3.1416"
+                      actuatorfrcrange="-500 500" />
+                    <body name="link_hand_L">
+                      <inertial pos="0.05 0 0" mass="0.448"
+                        diaginertia="0.00043717 0.00043717 0.00043717" />
+                      <joint name="human_wrist_L2" pos="0 0 0" axis="0 0 1" range="-3.1416 3.1416"
+                        actuatorfrcrange="-500 500" />
+                      <geom pos="-0.69 -0.23 0.05" quat="1 0 0 0" type="mesh"
+                        rgba="0.752941 0.752941 0.752941 1" mesh="hand_L" class="human_link" />
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="link_shoulder_R1" pos="-0.17 0.34 -0.01">
+          <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+          <joint name="human_shoulder_R1" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+            actuatorfrcrange="-500 500" />
+          <body name="link_shoulder_R2">
+            <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+            <joint name="human_shoulder_R2" pos="0 0 0" axis="0 0 1" range="-3.1416 3.1416"
+              actuatorfrcrange="-500 500" />
+            <body name="link_upper_arm_R">
+              <inertial pos="-0.13 0 0" mass="1.701" diaginertia="0.004 0.004 0.004" />
+              <joint name="human_shoulder_R3" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+                actuatorfrcrange="-500 500" />
+              <geom pos="0.17 -0.235 0" quat="1 0 0 0" type="mesh"
+                rgba="0.752941 0.752941 0.752941 1" mesh="upper_arm_R" class="human_link" />
+              <body name="link_elbow_R1" pos="-0.27 -0.015 -0.05">
+                <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+                <joint name="human_elbow_R1" pos="0 0 0" axis="0 1 0" range="-3.1416 3.1416"
+                  actuatorfrcrange="-500 500" />
+                <body name="link_forearm_R">
+                  <inertial pos="-0.12 0 0" mass="0.875" diaginertia="0.0013 0.0013 0.0013" />
+                  <joint name="human_elbow_R2" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+                    actuatorfrcrange="-500 500" />
+                  <geom pos="0.44 -0.22 0.05" quat="1 0 0 0" type="mesh"
+                    rgba="0.752941 0.752941 0.752941 1" mesh="forearm_R" class="human_link" />
+                  <body name="link_wrist_R1" pos="-0.25 0.01 0">
+                    <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+                    <joint name="human_wrist_R1" pos="0 0 0" axis="0 1 0" range="-3.1416 3.1416"
+                      actuatorfrcrange="-500 500" />
+                    <body name="link_hand_R">
+                      <inertial pos="-0.05 0 0" mass="0.448"
+                        diaginertia="0.00043717 0.00043717 0.00043717" />
+                      <joint name="human_wrist_R2" pos="0 0 0" axis="0 0 1" range="-3.1416 3.1416"
+                        actuatorfrcrange="-500 500" />
+                      <geom pos="0.69 -0.23 0.05" quat="1 0 0 0" type="mesh"
+                        rgba="0.752941 0.752941 0.752941 1" mesh="hand_R" class="human_link" />
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="link_hip_L1" pos="0.08 -0.185 0.02">
+        <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+        <joint name="human_hip_L1" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+          actuatorfrcrange="-500 500" />
+        <body name="link_hip_L2">
+          <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+          <joint name="human_hip_L2" pos="0 0 0" axis="0 0 1" range="-3.1416 3.1416"
+            actuatorfrcrange="-500 500" />
+          <body name="link_thigh_L">
+            <inertial pos="0 -0.2 0" mass="9.933" diaginertia="0.0765 0.0765 0.0765" />
+            <joint name="human_hip_L3" pos="0 0 0" axis="0 1 0" range="-3.1416 3.1416"
+              actuatorfrcrange="-500 500" />
+            <geom pos="-0.08 0.29 -0.03" quat="1 0 0 0" type="mesh"
+              rgba="0.752941 0.752941 0.752941 1" mesh="thigh_L" class="human_link" />
+            <body name="link_shank_L" pos="0.01 -0.43 -0.01">
+              <inertial pos="0 -0.17 0" mass="2.569" diaginertia="0.008 0.008 0.008" />
+              <joint name="human_knee_L" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+                actuatorfrcrange="-500 500" />
+              <geom pos="-0.09 0.72 -0.02" quat="1 0 0 0" type="mesh"
+                rgba="0.752941 0.752941 0.752941 1" mesh="shank_L" class="human_link" />
+              <body name="link_ankle_L1" pos="0 -0.37 -0.045">
+                <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+                <joint name="human_ankle_L1" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+                  actuatorfrcrange="-500 500" />
+                <body name="link_foot_L">
+                  <inertial pos="0 -0.1 0" mass="1.036" diaginertia="0.0018 0.0018 0.0018" />
+                  <joint name="human_ankle_L2" pos="0 0 0" axis="0 0 1" range="-3.1416 3.1416"
+                    actuatorfrcrange="-500 500" />
+                  <geom pos="-0.09 1.09 0.025" quat="1 0 0 0" type="mesh"
+                    rgba="0.752941 0.752941 0.752941 1" mesh="foot_L" class="human_link" />
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="link_hip_R1" pos="-0.08 -0.185 0.02">
+        <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+        <joint name="human_hip_R1" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+          actuatorfrcrange="-500 500" />
+        <body name="link_hip_R2">
+          <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+          <joint name="human_hip_R2" pos="0 0 0" axis="0 0 1" range="-3.1416 3.1416"
+            actuatorfrcrange="-500 500" />
+          <body name="link_thigh_R">
+            <inertial pos="0 -0.2 0" mass="9.933" diaginertia="0.0765 0.0765 0.0765" />
+            <joint name="human_hip_R3" pos="0 0 0" axis="0 1 0" range="-3.1416 3.1416"
+              actuatorfrcrange="-500 500" />
+            <geom pos="0.08 0.29 -0.03" quat="1 0 0 0" type="mesh"
+              rgba="0.752941 0.752941 0.752941 1" mesh="thigh_R" class="human_link" />
+            <body name="link_shank_R" pos="-0.01 -0.43 -0.01">
+              <inertial pos="0 -0.17 0" mass="2.569" diaginertia="0.008 0.008 0.008" />
+              <joint name="human_knee_R" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+                actuatorfrcrange="-500 500" />
+              <geom pos="0.09 0.72 -0.02" quat="1 0 0 0" type="mesh"
+                rgba="0.752941 0.752941 0.752941 1" mesh="shank_R" class="human_link" />
+              <body name="link_ankle_R1" pos="0 -0.37 -0.045">
+                <inertial pos="0 0 0" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+                <joint name="human_ankle_R1" pos="0 0 0" axis="1 0 0" range="-3.1416 3.1416"
+                  actuatorfrcrange="-500 500" />
+                <body name="link_foot_R">
+                  <inertial pos="0 -0.1 0" mass="1.036" diaginertia="0.0018 0.0018 0.0018" />
+                  <joint name="human_ankle_R2" pos="0 0 0" axis="0 0 1" range="-3.1416 3.1416"
+                    actuatorfrcrange="-500 500" />
+                  <geom pos="0.09 1.09 0.025" quat="1 0 0 0" type="mesh"
+                    rgba="0.752941 0.752941 0.752941 1" mesh="foot_R" class="human_link" />
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="human_waist" joint="human_waist" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_shoulder_L1" joint="human_shoulder_L1" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_shoulder_L2" joint="human_shoulder_L2" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_shoulder_L3" joint="human_shoulder_L3" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_elbow_L1" joint="human_elbow_L1" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_elbow_L2" joint="human_elbow_L2" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_wrist_L1" joint="human_wrist_L1" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_wrist_L2" joint="human_wrist_L2" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_shoulder_R1" joint="human_shoulder_R1" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_shoulder_R2" joint="human_shoulder_R2" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_shoulder_R3" joint="human_shoulder_R3" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_elbow_R1" joint="human_elbow_R1" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_elbow_R2" joint="human_elbow_R2" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_wrist_R1" joint="human_wrist_R1" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_wrist_R2" joint="human_wrist_R2" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_hip_L1" joint="human_hip_L1" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_hip_L2" joint="human_hip_L2" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_hip_L3" joint="human_hip_L3" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_knee_L" joint="human_knee_L" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_ankle_L1" joint="human_ankle_L1" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_ankle_L2" joint="human_ankle_L2" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_hip_R1" joint="human_hip_R1" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_hip_R2" joint="human_hip_R2" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_hip_R3" joint="human_hip_R3" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_knee_R" joint="human_knee_R" ctrllimited="true" ctrlrange="-3.1415 3.1416"
+      forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_ankle_R1" joint="human_ankle_R1" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+    <position name="human_ankle_R2" joint="human_ankle_R2" ctrllimited="true"
+      ctrlrange="-3.1415 3.1416" forcerange="-500 500" kp="1000" kv="10" />
+  </actuator>
+
+  <!-- <actuator>
+    <motor name="human_waist"       joint="human_waist"       ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_shoulder_L1" joint="human_shoulder_L1" ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_shoulder_L2" joint="human_shoulder_L2" ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_shoulder_L3" joint="human_shoulder_L3" ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_elbow_L1"    joint="human_elbow_L1"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_elbow_L2"    joint="human_elbow_L2"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_wrist_L1"    joint="human_wrist_L1"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_wrist_L2"    joint="human_wrist_L2"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_shoulder_R1" joint="human_shoulder_R1" ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_shoulder_R2" joint="human_shoulder_R2" ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_shoulder_R3" joint="human_shoulder_R3" ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_elbow_R1"    joint="human_elbow_R1"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_elbow_R2"    joint="human_elbow_R2"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_wrist_R1"    joint="human_wrist_R1"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_wrist_R2"    joint="human_wrist_R2"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_hip_L1"      joint="human_hip_L1"      ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_hip_L2"      joint="human_hip_L2"      ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_hip_L3"      joint="human_hip_L3"      ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_knee_L"      joint="human_knee_L"      ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_ankle_L1"    joint="human_ankle_L1"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_ankle_L2"    joint="human_ankle_L2"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_hip_R1"      joint="human_hip_R1"      ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_hip_R2"      joint="human_hip_R2"      ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_hip_R3"      joint="human_hip_R3"      ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_knee_R"      joint="human_knee_R"      ctrllimited="true" ctrlrange="-500 500" gear="1" />
+    <motor name="human_ankle_R1"    joint="human_ankle_R1"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+    <motor name="human_ankle_R2"    joint="human_ankle_R2"    ctrllimited="true" ctrlrange="-500 500"
+  gear="1" />
+  </actuator> -->
+
+</mujoco>

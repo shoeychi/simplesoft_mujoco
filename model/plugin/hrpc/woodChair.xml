@@ -1,4 +1,4 @@
-<mujoco model="simpleWoodTable">
+<mujoco model="WoodChair">
   <asset>
     <!-- Define yellow wood material -->
     <material name="yellow_wood" rgba="0.9 0.7 0.3 1"/>
@@ -7,7 +7,7 @@
   <worldbody>
     
     <!-- Table structure -->
-    <body name="simpleWoodTable" pos="1.3 0 0">
+    <body name="WoodChair" pos="1.3 0 0">
       <!-- Tabletop -->
       <geom type="box" size=".185 .6 .025" pos="0 0 0.535" material="yellow_wood"/>
       
