@@ -35,7 +35,7 @@
     <worldbody>
         <plugin plugin="mujoco.HumanRobotPhysicalContact">
             <config key="config"
-                value="model/plugin/hrpc/soft_config/config_test_human_left_arm.json" />
+                value="model/plugin/hrpc/soft_config/human_left_arm2.json" />
         </plugin>
 
         <light directional="true" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1" pos="0 0 5.0"
