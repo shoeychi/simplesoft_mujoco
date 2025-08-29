@@ -87,6 +87,9 @@ add_subdirectory(plugin/hrpc)
 
 add_subdirectory(model)
 
+add_subdirectory(controller)
+
+
 # `simulate` defines a macro, embed_in_bundle, that's used by `sample`, so that
 # subdirectory needs to be added first.
 # TODO: Remove this order dependency.

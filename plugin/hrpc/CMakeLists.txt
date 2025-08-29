@@ -1,8 +1,8 @@
 
-set(MUJOCO_simplysoft_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/../../include
+set(MUJOCO_hrpc_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/../../include
 )
 
-set(MUJOCO_simplysoft_SRCS
+set(MUJOCO_hrpc_SRCS
     HumanRobotPhysicalContact.cc
     register.cc
     SoftHelper.cc
@@ -18,8 +18,8 @@ find_package(nlohmann_json REQUIRED)
 
 # add include
 add_library(HumanRobotPhysicalContact SHARED)
-target_sources(HumanRobotPhysicalContact PRIVATE ${MUJOCO_simplysoft_SRCS})
-target_include_directories(HumanRobotPhysicalContact PRIVATE ${cuPhy_INCLUDE_DIRS} ${MUJOCO_simplysoft_INCLUDE})
+target_sources(HumanRobotPhysicalContact PRIVATE ${MUJOCO_hrpc_SRCS})
+target_include_directories(HumanRobotPhysicalContact PRIVATE ${cuPhy_INCLUDE_DIRS} ${MUJOCO_hrpc_INCLUDE})
 
 target_link_libraries(HumanRobotPhysicalContact PRIVATE mujoco ${cuPhy_LIBRARIES}) # add library
 target_link_libraries(HumanRobotPhysicalContact PRIVATE nlohmann_json)

@@ -1,0 +1,5 @@
+<mujoco model="HumanRobotPhysicalContact">
+    <compiler meshdir="./" texturedir="./" autolimits="true" angle="radian" />
+    <include file="./human_skeleton.xml" />
+    <include file="./woodChair.xml" />
+</mujoco>
