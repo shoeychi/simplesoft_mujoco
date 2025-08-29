@@ -103,11 +103,11 @@ class ModelGeneration:
 if __name__ == "__main__":
     mesh_skin = "test_model/skin.stl"
     mesh_skeleton = "test_model/skeleton.stl"
-    mesh_deformable = "human_neck/skin_neck.stl"
+    mesh_deformable = "left_upper_arm/left_upper_arm.stl"
 
     mesh_gen = ModelGeneration(mesh_skin, mesh_skeleton, mesh_deformable)
 
-    file_name = "human_neck/human_neck.poly"
+    file_name = "left_upper_arm/left_upper_arm.poly"
     mesh_gen.to_poly(file_name)
 
     mesh_gen.visualization_test()
